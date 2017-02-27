@@ -6,7 +6,7 @@ const TatariCheckboxItem = ({
   key,
   toggleCheckbox,
   uncheckAllCheckboxes,
-  updateUrl,
+  updateUrl
 }, { item }) => {
   const onChange = (evt) => {
     toggleCheckbox({ itemKey: item.key, evt });
@@ -43,7 +43,7 @@ const TatariCheckboxItem = ({
 
   return (
     <label htmlFor={id} className={styles['checkbox-item']}>
-      <input type="checkbox" {...{id, value: key, onChange, checked }} />
+      <input type='checkbox' {...{id, value: key, onChange, checked }} />
       {item.value}
     </label>
   );

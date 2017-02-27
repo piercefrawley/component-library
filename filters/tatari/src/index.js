@@ -1,3 +1,3 @@
-import Tatari from './TatariProvider';
+import Tatari from './Tatari';
 
 export default Tatari;
