@@ -1,5 +1,5 @@
-// @import "./variables";
-//
+@import "./variables";
+
 // $dropdownH: 29px;
 // $dropdownHeadW: 150px;
 // $dropdownBodyW: 250px;
@@ -37,28 +37,6 @@
 //   :global ul.rw-list > li.rw-list-option.rw-state-selected {
 //     background: none;
 //     color: inherit;
-//   }
-// }
-//
-// .filter-head {
-//   padding-left: 22px;
-//
-//   .filter-head-remove {
-//     color: palette(gray, dark);
-//     display: inline-block;
-//     height: $dropdownH;
-//     left: 0;
-//     line-height: $dropdownH;
-//     position: absolute;
-//     text-align: center;
-//     transition: background-color .1s ease, color .1s ease;
-//     top: 0;
-//     width: $dropdownH;
-//
-//     &:hover {
-//       background: palette(orange);
-//       color: #fff;
-//     }
 //   }
 // }
 //
@@ -113,20 +91,6 @@
 //     text-decoration: underline !important;
 //   }
 // }
-//
-// .clear-all-filters {
-//   background: none !important;
-//   border: 0 !important;
-//   color: #1e519f !important;
-//   margin-left: 20px;
-//   outline: 0;
-//   padding: 0 !important;
-//
-//   &:hover {
-//     color: palette(orange) !important;
-//     text-decoration: underline !important;
-//   }
-// }
 
 $h: 30px;
 $delay: 0.5s;
@@ -170,6 +134,29 @@ $delay: 0.5s;
   }
 }
 
+.loading {
+  animation-duration: 1.5s;
+  animation-name: spin;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  background-image:
+    url(
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz\
+      0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h\
+      0PScxNic+PGVsbGlwc2UgY3g9IjgiIGN5PSI4IiByeD0iNyIgcnk9IjciIHN0\
+      cm9rZS13aWR0aD0iMiIgc3Ryb2tlLW9wYWNpdHk9JzAuNScgc3Ryb2tlPSIjY\
+      2NjIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9J00gMSA4IEEgOCA4IDAgMCAwID\
+      QgMTMuNycgZmlsbD0nbm9uZScgc3Ryb2tlPScjRjQ3RTQyJyAgc3Ryb2tlLXd\
+      pZHRoPScyJyBzdHJva2Utb3BhY2l0eT0nMC44JyAvPjwvc3ZnPg=="
+    );
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  height: $h;
+  margin-left: auto;
+  width: $h;
+}
+
 .dropdownPlainHead {
   border-bottom: 1px solid #ccc;
   cursor: pointer;
@@ -188,5 +175,61 @@ $delay: 0.5s;
 
   &:hover {
     background: #eee;
+  }
+}
+
+.dropdownCheckboxesHead {
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+
+  &:hover {
+    background: #eee;
+  }
+}
+
+.count {
+  margin-right: auto;
+}
+
+.text {
+  margin-right: 5px;
+  text-align: left;
+}
+
+.remove {
+  height: $h;
+  line-height: $h;
+  text-align: center;
+  width: $h;
+}
+
+.dropdownCheckboxesHeadRemove {
+  height: $h;
+  line-height: $h;
+  text-align: center;
+  width: $h;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.clearAllFilters {
+  color: #1e519f;
+  cursor: pointer;
+  margin-left: 20px;
+  outline: 0;
+  padding: 0;
+
+  &:hover {
+    color: palette(orange);
+    text-decoration: underline;
   }
 }

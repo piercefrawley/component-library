@@ -7,6 +7,10 @@ import Tatari from '../src';
 
 const mockApi = new MockAdapter(axios);
 
+import defaultStyles from '../src/TatariDefault.scss';
+import sandboxStyles from './sandbox.scss';
+
+
 mockApi
 .onGet('/saved_filters')
   .reply(200, {})
@@ -44,7 +48,7 @@ mockApi
   ]);
 
 const urls = {
-  restore: '/saved_filters',
+  saved: '/saved_filters',
   available: '/available_filters'
 };
 
@@ -52,7 +56,12 @@ const onFetch = () => {
   console.warn("External onFetch called.");  // eslint-disable-line
 };
 
+const stylesheets = [
+  defaultStyles,
+  sandboxStyles
+];
+
 render(
-  <Tatari {...{ urls, onFetch }} />,
+  <Tatari {...{ urls, onFetch, stylesheets }} />,
   document.getElementById('root'),
 );
