@@ -2,20 +2,23 @@ import React, { PropTypes } from 'react';
 import cx from 'classnames';
 
 const TatariDropdownCheckboxes = ({
-  data,
   filter,
   isExpanded,
   isLoading,
   onChange,
   onExpand,
   onRemove,
+  onSearch,
+  options,
   styles
 }) => {
-  // const adjustedCount = (count ? `(${count})` : null);
+  // TODO const adjustedCount = (count ? `(${count})` : null);
+  // TODO text wrapping on checkbox items
+  // TODO padding and improved styling
   const adjustedCount = '(6)';
 
-  const remove = (<div
-    className={cx('fa', 'fa-times', styles.remove)}
+  const remove = (<button
+    className={cx('fa', 'fa-times', styles.dropdownCheckboxesHeadRemove)}
     data-key={filter.key}
     onClick={onRemove}
   />);
@@ -35,29 +38,34 @@ const TatariDropdownCheckboxes = ({
 
   const text = <div className={styles.text}>{filter.value}</div>;
 
-  // const items = data.map(item => (<div
-  //   key={`item-${item.key}`}
-  //   data-endpoint={item.endpoint}
-  //   data-key={item.key}
-  //   data-value={item.value}
-  //   className={styles.dropdownPlainItem}
-  //   onClick={onChange}
-  // >
-  //   {item.value}
-  // </div>));
-  const items = [
-    <div>A</div>,
-    <div>A</div>,
-    <div>A</div>,
-    <div>A</div>
-  ]
+  const items = options.reduce((acc, option) => {
+    if (option.hidden !== true) {
+      acc.push(<label
+        key={`option-${option.key}`}
+        data-key={option.key}
+        className={styles.dropdownCheckboxesItem}
+        onChange={onChange}
+      >
+        <input
+          type='checkbox'
+          checked={option.checked}
+          className={styles.dropdownCheckboxesCheckbox}
+        />
+        {option.value}
+      </label>);
+    }
+
+    return acc;
+  }, []);
 
   return (<div
     className={cx(styles.dropdownContainer, { [styles.expanded]: isExpanded })}
-    data-key={filter.key}
-    onClick={onExpand}
   >
-    <div className={styles.dropdownCheckboxesHead}>
+    <div // eslint-disable-line
+      className={styles.dropdownCheckboxesHead}
+      data-key={filter.key}
+      onClick={onExpand}
+    >
       {remove}
       {text}
       {adjustedCount}
@@ -65,12 +73,26 @@ const TatariDropdownCheckboxes = ({
       {loading}
     </div>
 
+    <div className={styles.dropdownCheckboxesSearch}>
+      <input onChange={onSearch} data-key={filter.key} className={styles.input} />
+      <div className={cx('fa', 'fa-search', styles.icon)} />
+    </div>
+
+    <div className={styles.dropdownCheckboxesControls}>
+      <button onClick={null} className={styles.control}>
+        Select All
+      </button>
+      <span className={styles.control}>/</span>
+      <button onClick={null} className={styles.control}>
+        Clear All
+      </button>
+    </div>
+
     {items}
   </div>);
 };
 
 TatariDropdownCheckboxes.propTypes = {
-  data: PropTypes.arrayOf(),
   filter: PropTypes.shape({
     endpoint: PropTypes.string,
     key: PropTypes.string,
@@ -81,62 +103,16 @@ TatariDropdownCheckboxes.propTypes = {
   onChange: PropTypes.func.isRequired,
   onExpand: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
+  onSearch: PropTypes.func.isRequired,
+  options: PropTypes.arrayOf(PropTypes.shape()),
   styles: PropTypes.shape().isRequired
 };
 
 TatariDropdownCheckboxes.defaultProps = {
-  data: [],
   isExpanded: false,
   isLoading: false,
+  options: [],
   styles: {}
 };
 
 export default TatariDropdownCheckboxes;
-
-// const TatariCheckboxItem = ({
-//   checkAllCheckboxes,
-//   key,
-//   toggleCheckbox,
-//   uncheckAllCheckboxes,
-//   updateUrl
-// }, { item }) => {
-//   const onChange = (evt) => {
-//     toggleCheckbox({ itemKey: item.key, evt });
-//     updateUrl();
-//   };
-//
-//   const onCheckAll = () => {
-//     checkAllCheckboxes(key);
-//     updateUrl();
-//   };
-//
-//   const onUncheckAll = () => {
-//     uncheckAllCheckboxes(key);
-//     updateUrl();
-//   };
-//
-//   if (item === 'SELECTALL') {
-//     return (
-//       <div className={styles['toggle-items-container']}>
-//         <button onClick={onCheckAll} className={styles['select-all-items']}>
-//           Select All
-//         </button>
-//         <span className={styles['toggle-items-divider']}>/</span>
-//         <button onClick={onUncheckAll} className={styles['clear-all-items']}>
-//           Clear All
-//         </button>
-//       </div>
-//     );
-//   }
-//
-//   const id = `tatari-checkbox-item-${item.key}`;
-//
-//   const checked = (item.checked ? 'checked' : null);
-//
-//   return (
-//     <label htmlFor={id} className={styles['checkbox-item']}>
-//       <input type='checkbox' {...{id, value: key, onChange, checked }} />
-//       {item.value}
-//     </label>
-//   );
-// };

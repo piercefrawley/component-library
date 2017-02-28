@@ -35,7 +35,9 @@ export default class Tatari extends React.Component {
       activeFilters: [],
       expanded: {},
       inactiveFilters: [],
-      loading: { inactive: true }
+      loading: { inactive: true },
+      // TODO preserve inactive stability
+      options: {}
     };
   }
 
@@ -85,24 +87,10 @@ export default class Tatari extends React.Component {
         //       if (Object.keys(params.filters).length === 0) {
         //         dispatch(initResolve);
         //       }
-        this.setState({ loading: {} });
       })
-      // .then(init)
-      // .then(() => {
-        // this.props.onFetch(SEND FILTER DATA HERE);
-      // })
       .catch(e => { console.error(e); }) // eslint-disable-line
-      .then(() => {
-        const loading = Object.assign(this.state.loading, { init: false });
-        this.setState({ loading });
-      });
+      .then(() => { this.setState({ loading: {} }); });
   }
-
-  // onClearAllClick = () => {
-    // this.props.activeRemoveAll();
-    // this.props.updateUrl();
-    // this.props.onChange();
-  // }
 
   // onAvailableToggle = (isExpanded) => {
     // if (isExpanded) {
@@ -163,34 +151,26 @@ export default class Tatari extends React.Component {
     // });
   // }
 
-  // headRenderer = (key) => {
-    // const {
-    //   availableFilters,
-    //   activeFiltersCheckedCount,
-    //   activeRemoveOne,
-    //   onChange,
-    //   updateUrl,
-    // } = this.props;
-    //
-    // const currentFilter = availableFilters.find(obj => obj.key === key);
-    //
-    // const onRemove = () => {
-    //   activeRemoveOne(currentFilter.key);
-    //   updateUrl();
-    //   onChange();
-    // };
-    //
-    // return TatariFilterHead.bind(null,
-    //   onRemove,
-    //   currentFilter.text,
-    //   activeFiltersCheckedCount.get(key),
-    // );
-  // }
+  onSearch = (evt) => {
+    // TODO throttle
+
+    const value = evt.target.value.toLowerCase();
+    const key = evt.target.dataset.key;
+
+    const options = this.state.options;
+
+    const filteredOptions = options[key].map(option => Object.assign(option,
+      { hidden: (option.value.toLowerCase().indexOf(value) === -1) }));
+
+    options[key] = filteredOptions;
+
+    this.setState({ options });
+  }
 
   addActive = (evt) => {
     evt.stopPropagation();
 
-    const { activeFilters, inactiveFilters } = this.state;
+    const { activeFilters, inactiveFilters, loading, options } = this.state;
 
     const key = evt.target.dataset.key;
     const index = inactiveFilters.findIndex(filter => filter.key === key);
@@ -198,7 +178,18 @@ export default class Tatari extends React.Component {
 
     inactiveFilters.splice(index, 1);
     activeFilters.push(item);
-    this.setState({ inactiveFilters, activeFilters, expanded: {} });
+
+    if (options[key] === undefined) {
+      loading[key] = true;
+      get(item.endpoint).then(({ data }) => {
+        options[key] = data;
+        const newLoading = this.state.loading;
+        newLoading[key] = false;
+        this.setState({ loading: newLoading });
+      });
+    }
+
+    this.setState({ inactiveFilters, activeFilters, loading, expanded: {} });
   }
 
   removeActive = (evt) => {
@@ -216,6 +207,7 @@ export default class Tatari extends React.Component {
   }
 
   removeAllActive = () => {
+    // TODO URL update
     const { activeFilters, inactiveFilters } = this.state;
     const inactive = inactiveFilters.concat(activeFilters);
 
@@ -226,7 +218,8 @@ export default class Tatari extends React.Component {
     const inactiveFilters = this.state.inactiveFilters.length
       ? (<TatariDropdownPlain
         data={this.state.inactiveFilters}
-        isExpanded={this.state.expanded.inactive}
+        isExpanded={true}
+        // isExpanded={this.state.expanded.inactive}
         isLoading={this.state.loading.inactive}
         onChange={this.addActive}
         onExpand={this.onExpand}
@@ -238,31 +231,25 @@ export default class Tatari extends React.Component {
       .map(item => <TatariDropdownCheckboxes
         key={`active-${item.key}`}
         filter={item}
-        isExpanded={this.state.expanded[item.key]}
+        isExpanded={true}
+        // isExpanded={this.state.expanded[item.key]}
         isLoading={this.state.loading[item.key]}
         onChange={() => {}}
         onExpand={this.onExpand}
         onRemove={this.removeActive}
-        data={[]}
+        onSearch={this.onSearch}
+        options={this.state.options[item.key]}
         styles={styles}
       />);
 
-      // TODO count if more than 1 filter selected
-      // const clearAll = activeFilters.length
-      //   ? <TatariClearAll onClick={this.onClearAllClick} />
-      //   : null;
-      //
-      // {currentFilters}
-      // {clearAll}
-
-      const clearAll = (activeFilters.length
-        ? (<div
-          onClick={this.removeAllActive}
-          className={styles.clearAllFilters}
-        >
-          Clear All
-        </div>)
-        : null)
+    const clearAll = (activeFilters.length
+      ? (<div
+        onClick={this.removeAllActive}
+        className={styles.clearAllFilters}
+      >
+        Clear All
+      </div>)
+      : null);
 
     return (
       <div>

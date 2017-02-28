@@ -39,61 +39,16 @@
 //     color: inherit;
 //   }
 // }
-//
-// .checkbox-item,
-// .plain-item {
-//   cursor: pointer;
-//   display: block;
-//   position: relative;
-//   word-break: keep-all;
-//
-//   [type=checkbox] {
-//     left: 3px;
-//     margin-top: -6px;
-//     position: absolute;
-//     top: 50%;
-//   }
-// }
-//
-// .checkbox-item {
-//   padding: 5px 10px 5px 25px;
-// }
-//
-// .plain-item {
-//   padding: 5px 10px;
-// }
-//
-// .toggle-items-container {
-//   line-height: $dropdownH;
-//   padding-left: 10px;
-// }
-//
-// .toggle-items-divider {
-//   display: inline-block;
-//   line-height: $dropdownH;
-//   paddding: 0 4px;
-//   vertical-align: top;
-// }
-//
-// .clear-all-items,
-// .select-all-items {
-//   background: none !important;
-//   border: 0 !important;
-//   color: #1e519f !important;
-//   display: inline-block;
-//   line-height: $dropdownH;
-//   margin: 0 3px;
-//   padding: 0 !important;
-//   vertical-align: top;
-//
-//   &:hover {
-//     color: palette(orange) !important;
-//     text-decoration: underline !important;
-//   }
-// }
 
 $h: 30px;
 $delay: 0.5s;
+$searchH: 20px;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 .dropdownContainer {
   border: 1px solid #ccc;
@@ -131,6 +86,10 @@ $delay: 0.5s;
 
   &:focus {
     outline: 0;
+  }
+
+  &:hover {
+    background: #ddd;
   }
 }
 
@@ -197,18 +156,85 @@ $delay: 0.5s;
   text-align: left;
 }
 
-.remove {
+.dropdownCheckboxesHeadRemove {
+  background: 0;
+  border: 0;
+  cursor: pointer;
+  display: block;
   height: $h;
   line-height: $h;
+  margin-right: 5px;
+  outline: 0;
   text-align: center;
   width: $h;
+
+  &:hover {
+    background: #ddd;
+  }
 }
 
-.dropdownCheckboxesHeadRemove {
-  height: $h;
-  line-height: $h;
-  text-align: center;
-  width: $h;
+.dropdownCheckboxesSearch {
+  display: block;
+  height: $searchH;
+  margin: 5px auto;
+  position: relative;
+  width: 90%;
+
+  .input {
+    display: block;
+    height: $searchH;
+    padding-right: $searchH;
+    width: 100%;
+  }
+
+  .icon {
+    font-size: $searchH / 2;
+    height: 100%;
+    line-height: $searchH;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+    width: $searchH;
+  }
+}
+
+.dropdownCheckboxesControls {
+  .control {
+    background: none;
+    border: 0;
+    color: #1e519f;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 13px;
+    line-height: 20px;
+    margin: 0 3px;
+    padding: 0 !important;
+    vertical-align: top;
+
+    &:hover {
+      color: palette(orange) !important;
+      text-decoration: underline !important;
+    }
+  }
+
+  .divider {
+    margin: 0 5px;
+  }
+}
+
+.dropdownCheckboxesItem {
+  cursor: pointer;
+  display: block;
+
+  &:hover {
+    background: #eee;
+  }
+}
+
+.dropdownCheckboxesCheckbox {
+  cursor: pointer;
+  margin: 0 5px;
 }
 
 @keyframes spin {
