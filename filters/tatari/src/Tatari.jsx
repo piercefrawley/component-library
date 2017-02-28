@@ -3,18 +3,18 @@ import qs from 'qs';
 // import cx from 'classnames';
 // import { getSaved, getAvailable, init } from './TatariUtils';
 import { get, patch } from './TatariApi';
+import TatariDropdownPlain from './TatariDropdownPlain';
 
-// import baseStyles from './Tatari.scss';
-// import defaultStyles from './TatariDefault.scss';
-// import composeStyles from '../../../shared/stylesheetComposer';
-//
+import baseStyles from './Tatari.scss';
+import defaultStyles from './TatariDefault.scss';
+import composeStyles from '../../../shared/stylesheetComposer';
+
+// TODO REMOVE THESE
 // import TatariCheckboxItem from './TatariCheckboxItem';
-// import TatariPlainItem from './TatariPlainItem';
 // import TatariClearAll from './TatariClearAll';
 // import TatariFilterHead from './TatariFilterHead';
 
-// let styles = {};
-
+let styles = {};
 
 export default class Tatari extends React.Component {
   static propTypes = {
@@ -40,6 +40,7 @@ export default class Tatari extends React.Component {
     // updateUrl: PropTypes.func,
 
     onFetch: PropTypes.func.isRequired,
+    stylesheets: PropTypes.arrayOf(PropTypes.shape()),
     urls: PropTypes.shape({
       saved: PropTypes.string,
       available: PropTypes.string.isRequired
@@ -47,24 +48,26 @@ export default class Tatari extends React.Component {
   }
 
   static defaultProps = {
+    stylesheets: [defaultStyles]
   }
 
   constructor(props) {
     super(props);
 
+    styles = composeStyles(baseStyles, props.stylesheets);
+
     this.state = {
       activeFilters: [],
-      availableFilters: [],
+      inactiveFilters: [],
       loading: { init: true }
     };
   }
 
   componentDidMount() {
-    // window.addEventListener('click', this.blurHandler);
 
     get(this.props.urls.available)
       .then(({ data }) => {
-        this.setState({ availableFilters: data });
+        this.setState({ inactiveFilters: data });
 
         // Populate filters from URL first, then try remote retrieve.
         const url = window.location.href.split('?');
@@ -80,6 +83,7 @@ export default class Tatari extends React.Component {
         // SAMPLE: {ball_in_court_id: ["1228193", "1188710"]}
         const keys = Object.keys(data);
 
+        // TODO no more availableFilters in state! instead, update inactiveFilters
         // if (keys.length === 0) {
         //
         // }
@@ -128,6 +132,7 @@ export default class Tatari extends React.Component {
   }
 
   onAvailableChange = (item) => {
+    // TODO UPDATE THE INACTIVEFILTERS STATE, NOT AVAILABLEFILTERS
     // this.props.activeAdd(item);
     // this.props.activeSetOpen({ key: item.key });
   }
@@ -215,28 +220,15 @@ export default class Tatari extends React.Component {
     //   availableFilters,
     //   isOpen,
     // } = this.props;
-    //
-    // const bank = activeFilters.toJS();
-    // const bankKeys = Object.keys(bank);
-    //
-    // const availableFiltersWithoutActive = availableFilters
-    //   .filter(obj => bankKeys.indexOf(obj.key) === -1);
-    //
-    const availableFiltersIfAny = <div>tmp</div>
-    // const availableFiltersIfAny = availableFiltersWithoutActive.length
-    //   ? (<div className={styles.dropdown} onClick={this.onAvailableClick}>
-    //     <DropdownList
-    //       data={availableFiltersWithoutActive}
-    //       itemComponent={TatariPlainItem}
-    //       onToggle={this.onAvailableToggle}
-    //       onChange={this.onAvailableChange}
-    //       value="Add Filter"
-    //       textField="text"
-    //       valueField="endpoint"
-    //     />
-    //   </div>)
-    //   : null;
-    //
+
+    const availableFilters = this.state.inactiveFilters.length
+      ? (<TatariDropdownPlain
+        data={this.state.inactiveFilters}
+        onChange={this.onAvailableChange}
+        styles={styles}
+      />)
+      : null;
+
     // const currentFilters = Object.keys(bank).map((key) => {
     //   return (
     //     <div
@@ -268,7 +260,7 @@ export default class Tatari extends React.Component {
 
     return (
       <div>
-        {availableFiltersIfAny}
+        {availableFilters}
       </div>
     );
   }

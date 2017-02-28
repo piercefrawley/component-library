@@ -13,9 +13,6 @@ export const getSaved = (restoreUrl) => {
   // const params = qs.parse(url[1]);
   // return params.filters;
 
-  // return (data === undefined
-  //   ? get(restoreUrl)
-  //   : { data });
 };
 
 // export const storedPatch = url => async (dispatch, getState) => {
