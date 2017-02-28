@@ -1,45 +1,5 @@
 @import "./variables";
 
-// $dropdownH: 29px;
-// $dropdownHeadW: 150px;
-// $dropdownBodyW: 250px;
-// $inputP: 5px 10px;
-//
-// .dropdown {
-//   display: inline-block;
-//   margin-right: 10px;
-//   min-width: $dropdownHeadW;
-//   vertical-align: top;
-//
-//   :global .rw-popup {
-//     width: $dropdownBodyW;
-//   }
-//
-//   :global .rw-filter-input {
-//     display: block;
-//     line-height: 16px;
-//     margin: $inputP;
-//     width: auto;
-//   }
-//
-//   :global ul.rw-list > li.rw-list-option {
-//     border: 0;
-//     line-height: 16px;
-//     padding: 0;
-//   }
-//
-//   :global ul.rw-list > li.rw-list-option.rw-state-focus {
-//     &:hover {
-//       background: #e7e7e7;
-//     }
-//   }
-//
-//   :global ul.rw-list > li.rw-list-option.rw-state-selected {
-//     background: none;
-//     color: inherit;
-//   }
-// }
-
 $h: 30px;
 $delay: 0.5s;
 $searchH: 20px;
@@ -50,10 +10,16 @@ $searchH: 20px;
   padding: 0;
 }
 
+.filterContainer {
+  display: flex;
+  flex-direction: row;
+}
+
 .dropdownContainer {
   border: 1px solid #ccc;
   box-sizing: border-box;
   max-height: $h;
+  margin-right: 10px;
   line-height: $h;
   overflow: hidden;
   transition: all $delay ease;
@@ -216,6 +182,10 @@ $searchH: 20px;
       color: palette(orange) !important;
       text-decoration: underline !important;
     }
+
+    &:focus {
+      outline: 0;
+    }
   }
 
   .divider {
@@ -250,6 +220,7 @@ $searchH: 20px;
 .clearAllFilters {
   color: #1e519f;
   cursor: pointer;
+  line-height: $h;
   margin-left: 20px;
   outline: 0;
   padding: 0;

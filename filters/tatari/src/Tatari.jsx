@@ -1,7 +1,5 @@
 import React, { PropTypes } from 'react';
 import qs from 'qs';
-// import cx from 'classnames';
-// import { getSaved, getAvailable, init } from './TatariUtils';
 import { get, patch } from './TatariApi';
 import TatariDropdownPlain from './TatariDropdownPlain';
 import TatariDropdownCheckboxes from './TatariDropdownCheckboxes';
@@ -14,7 +12,7 @@ let styles = {};
 
 export default class Tatari extends React.Component {
   static propTypes = {
-    onFetch: PropTypes.func.isRequired,
+    onComplete: PropTypes.func.isRequired,
     stylesheets: PropTypes.arrayOf(PropTypes.shape()),
     urls: PropTypes.shape({
       saved: PropTypes.string,
@@ -36,7 +34,7 @@ export default class Tatari extends React.Component {
       expanded: {},
       inactiveFilters: [],
       loading: { inactive: true },
-      // TODO preserve inactive stability
+      // TODO preserve inactive stable ordering
       options: {}
     };
   }
@@ -92,19 +90,14 @@ export default class Tatari extends React.Component {
       .then(() => { this.setState({ loading: {} }); });
   }
 
-  // onAvailableToggle = (isExpanded) => {
-    // if (isExpanded) {
-    //   this.props.activeSetAllClosed();
-    //   this.props.activeRemoveEmpty();
-    // }
-  // }
-
   onExpand = (evt) => {
     evt.stopPropagation();
     const key = evt.currentTarget.dataset.key;
     if (this.state.loading[key]) {
       return;
     }
+
+    // TODO this.props.activeRemoveEmpty();
 
     const expanded = { [key]: !this.state.expanded[key] };
 
@@ -114,15 +107,6 @@ export default class Tatari extends React.Component {
   onBlur = () => {
     this.setState({ expanded: {} });
 
-    // const {
-    //   activeRemoveEmpty,
-    //   activeSetAllClosed,
-    //   isOpen,
-    //   onChange,
-    //   storedPatch,
-    //   persistenceUrl,
-    // } = this.props;
-    //
     // const openFilters = isOpen
     //   .reduce((acc, v) => { return (v ? acc + 1 : acc); }, 0);
     //
@@ -130,26 +114,9 @@ export default class Tatari extends React.Component {
     //   activeRemoveEmpty();
     //   activeSetAllClosed();
     //   storedPatch(persistenceUrl);
-    //   onChange();
+    //   onComplete();
     // }
   }
-
-  // itemRenderer = (key) => {
-    // const {
-    //   checkAllCheckboxes,
-    //   toggleCheckbox,
-    //   uncheckAllCheckboxes,
-    //   updateUrl,
-    // } = this.props;
-    //
-    // return TatariCheckboxItem.bind(null, {
-    //   checkAllCheckboxes,
-    //   key,
-    //   toggleCheckbox,
-    //   uncheckAllCheckboxes,
-    //   updateUrl,
-    // });
-  // }
 
   onSearch = (evt) => {
     // TODO throttle
@@ -164,6 +131,48 @@ export default class Tatari extends React.Component {
 
     options[key] = filteredOptions;
 
+    this.setState({ options });
+  }
+
+  checkOne = (evt) => {
+    evt.stopPropagation();
+
+    const { options } = this.state;
+    const key = evt.target.dataset.key;
+    const filterKey = evt.target.dataset.filterKey;
+
+    options[filterKey].forEach((option) => {
+      if (option.key.toString() === key) {
+        option.checked = !option.checked;
+      }
+    });
+
+    this.setState({ options, expanded: Object.assign(this.state.expanded, { [filterKey]: true }) });
+  }
+
+  checkAll = (evt) => {
+    evt.stopPropagation();
+
+    const key = evt.target.dataset.key;
+    const { options } = this.state;
+
+    options[key].reduce((acc, option) =>
+      acc.concat(Object.assign(option, { checked: true })), []);
+
+    // Not sure why this works _without_ resetting the state? Ben 170228
+    this.setState({ options });
+  }
+
+  checkNone = (evt) => {
+    evt.stopPropagation();
+
+    const key = evt.target.dataset.key;
+    const options = this.state.options;
+
+    options[key].reduce((acc, option) =>
+      Object.assign(option, { checked: false }), []);
+
+    // See above.
     this.setState({ options });
   }
 
@@ -218,8 +227,7 @@ export default class Tatari extends React.Component {
     const inactiveFilters = this.state.inactiveFilters.length
       ? (<TatariDropdownPlain
         data={this.state.inactiveFilters}
-        isExpanded={true}
-        // isExpanded={this.state.expanded.inactive}
+        isExpanded={this.state.expanded.inactive}
         isLoading={this.state.loading.inactive}
         onChange={this.addActive}
         onExpand={this.onExpand}
@@ -231,10 +239,12 @@ export default class Tatari extends React.Component {
       .map(item => <TatariDropdownCheckboxes
         key={`active-${item.key}`}
         filter={item}
-        isExpanded={true}
-        // isExpanded={this.state.expanded[item.key]}
+        isExpanded={this.state.expanded[item.key]}
         isLoading={this.state.loading[item.key]}
         onChange={() => {}}
+        onCheckOne={this.checkOne}
+        onCheckAll={this.checkAll}
+        onCheckNone={this.checkNone}
         onExpand={this.onExpand}
         onRemove={this.removeActive}
         onSearch={this.onSearch}
@@ -252,7 +262,7 @@ export default class Tatari extends React.Component {
       : null);
 
     return (
-      <div>
+      <div className={styles.filterContainer}>
         {activeFilters}
         {inactiveFilters}
         {clearAll}

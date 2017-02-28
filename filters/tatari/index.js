@@ -2215,6 +2215,10 @@ var _keys = __webpack_require__(84);
 
 var _keys2 = _interopRequireDefault(_keys);
 
+var _assign = __webpack_require__(39);
+
+var _assign2 = _interopRequireDefault(_assign);
+
 var _defineProperty2 = __webpack_require__(19);
 
 var _defineProperty3 = _interopRequireDefault(_defineProperty2);
@@ -2240,9 +2244,6 @@ var _inherits2 = __webpack_require__(91);
 var _inherits3 = _interopRequireDefault(_inherits2);
 
 var _class, _temp;
-// import cx from 'classnames';
-// import { getSaved, getAvailable, init } from './TatariUtils';
-
 
 var _react = __webpack_require__(33);
 
@@ -2293,6 +2294,8 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return;
       }
 
+      // TODO this.props.activeRemoveEmpty();
+
       var expanded = (0, _defineProperty3.default)({}, key, !_this.state.expanded[key]);
 
       _this.setState({ expanded: expanded });
@@ -2301,15 +2304,6 @@ var Tatari = (_temp = _class = function (_React$Component) {
     _this.onBlur = function () {
       _this.setState({ expanded: {} });
 
-      // const {
-      //   activeRemoveEmpty,
-      //   activeSetAllClosed,
-      //   isOpen,
-      //   onChange,
-      //   storedPatch,
-      //   persistenceUrl,
-      // } = this.props;
-      //
       // const openFilters = isOpen
       //   .reduce((acc, v) => { return (v ? acc + 1 : acc); }, 0);
       //
@@ -2319,6 +2313,63 @@ var Tatari = (_temp = _class = function (_React$Component) {
       //   storedPatch(persistenceUrl);
       //   onChange();
       // }
+    };
+
+    _this.onSearch = function (evt) {
+      // TODO throttle
+
+      var value = evt.target.value.toLowerCase();
+      var key = evt.target.dataset.key;
+
+      var options = _this.state.options;
+
+      var filteredOptions = options[key].map(function (option) {
+        return (0, _assign2.default)(option, { hidden: option.value.toLowerCase().indexOf(value) === -1 });
+      });
+
+      options[key] = filteredOptions;
+
+      _this.setState({ options: options });
+    };
+
+    _this.checkOne = function (evt) {
+      var options = _this.state.options;
+
+      var key = evt.target.dataset.key;
+      var filterKey = evt.target.dataset.filterKey;
+
+      options[filterKey].forEach(function (option) {
+        if (option.key.toString() === key) {
+          option.checked = !option.checked;
+        }
+      });
+
+      _this.setState({ options: options });
+    };
+
+    _this.checkAll = function (evt) {
+      var key = evt.target.dataset.key;
+      var options = _this.state.options;
+
+
+      options[key].reduce(function (acc, option) {
+        return acc.concat((0, _assign2.default)(option, { checked: true }));
+      }, []);
+
+      // Not sure why this works _without_ resetting the state? Ben 170228
+      // this.setState({ options });
+    };
+
+    _this.checkNone = function (evt) {
+      var key = evt.target.dataset.key;
+      var options = _this.state.options;
+
+      options[key].reduce(function (acc, option) {
+        return (0, _assign2.default)(option, { checked: false });
+      }, []);
+
+      // See above.
+      // this.setState({ options });
     };
 
     _this.addActive = function (evt) {
@@ -2392,7 +2443,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
       expanded: {},
       inactiveFilters: [],
       loading: { inactive: true },
-      // TODO preserve inactive stability
+      // TODO preserve inactive stable ordering
       options: {}
     };
     return _this;
@@ -2450,7 +2501,6 @@ var Tatari = (_temp = _class = function (_React$Component) {
         //       if (Object.keys(params.filters).length === 0) {
         //         dispatch(initResolve);
         //       }
-        _this2.setState({ loading: {} });
       }).catch(function (e) {
         console.error(e);
       }) // eslint-disable-line
@@ -2458,31 +2508,6 @@ var Tatari = (_temp = _class = function (_React$Component) {
         _this2.setState({ loading: {} });
       });
     }
-
-    // onAvailableToggle = (isExpanded) => {
-    // if (isExpanded) {
-    //   this.props.activeSetAllClosed();
-    //   this.props.activeRemoveEmpty();
-    // }
-    // }
-
-    // itemRenderer = (key) => {
-    // const {
-    //   checkAllCheckboxes,
-    //   toggleCheckbox,
-    //   uncheckAllCheckboxes,
-    //   updateUrl,
-    // } = this.props;
-    //
-    // return TatariCheckboxItem.bind(null, {
-    //   checkAllCheckboxes,
-    //   key,
-    //   toggleCheckbox,
-    //   uncheckAllCheckboxes,
-    //   updateUrl,
-    // });
-    // }
-
   }, {
     key: 'render',
     value: function render() {
@@ -2490,8 +2515,9 @@ var Tatari = (_temp = _class = function (_React$Component) {
 
       var inactiveFilters = this.state.inactiveFilters.length ? _react2.default.createElement(_TatariDropdownPlain2.default, {
         data: this.state.inactiveFilters,
-        isExpanded: this.state.expanded.inactive,
-        isLoading: this.state.loading.inactive,
+        isExpanded: true
+        // isExpanded={this.state.expanded.inactive}
+        , isLoading: this.state.loading.inactive,
         onChange: this.addActive,
         onExpand: this.onExpand,
         styles: styles
@@ -2501,12 +2527,17 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return _react2.default.createElement(_TatariDropdownCheckboxes2.default, {
           key: 'active-' + item.key,
           filter: item,
-          isExpanded: _this3.state.expanded[item.key],
-          isLoading: _this3.state.loading[item.key],
+          isExpanded: true
+          // isExpanded={this.state.expanded[item.key]}
+          , isLoading: _this3.state.loading[item.key],
           onChange: function onChange() {},
+          onCheckOne: _this3.checkOne,
+          onCheckAll: _this3.checkAll,
+          onCheckNone: _this3.checkNone,
           onExpand: _this3.onExpand,
           onRemove: _this3.removeActive,
-          options: [],
+          onSearch: _this3.onSearch,
+          options: _this3.state.options[item.key],
           styles: styles
         });
       });
@@ -2522,7 +2553,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
 
       return _react2.default.createElement(
         'div',
-        null,
+        { className: styles.filterContainer },
         activeFilters,
         inactiveFilters,
         clearAll
@@ -3445,17 +3476,24 @@ var TatariDropdownCheckboxes = function TatariDropdownCheckboxes(_ref) {
   var filter = _ref.filter,
       isExpanded = _ref.isExpanded,
       isLoading = _ref.isLoading,
-      onChange = _ref.onChange,
+      onCheckOne = _ref.onCheckOne,
+      onCheckAll = _ref.onCheckAll,
+      onCheckNone = _ref.onCheckNone,
       onExpand = _ref.onExpand,
       onRemove = _ref.onRemove,
+      onSearch = _ref.onSearch,
       options = _ref.options,
       styles = _ref.styles;
 
-  // const adjustedCount = (count ? `(${count})` : null);
-  var adjustedCount = '(6)';
+  // TODO text wrapping on checkbox items
+  // TODO padding and improved styling
+  var count = options.reduce(function (acc, option) {
+    return option.checked ? acc + 1 : acc;
+  }, 0);
+  var adjustedCount = count ? '(' + count + ')' : null;
 
-  var remove = _react2.default.createElement('div', {
-    className: (0, _classnames2.default)('fa', 'fa-times', styles.remove),
+  var remove = _react2.default.createElement('button', {
+    className: (0, _classnames2.default)('fa', 'fa-times', styles.dropdownCheckboxesHeadRemove),
     'data-key': filter.key,
     onClick: onRemove
   });
@@ -3476,34 +3514,71 @@ var TatariDropdownCheckboxes = function TatariDropdownCheckboxes(_ref) {
     filter.value
   );
 
-  var items = options.map(function (option) {
-    return _react2.default.createElement(
-      'div',
-      {
-        key: 'option-' + option.key,
-        'data-key': option.key,
-        className: styles.dropdownCheckboxItem,
-        onClick: onChange
-      },
-      option.value
-    );
-  });
+  var items = options.reduce(function (acc, option) {
+    if (option.hidden !== true) {
+      acc.push(_react2.default.createElement(
+        'label',
+        {
+          key: 'option-' + option.key,
+          className: styles.dropdownCheckboxesItem
+        },
+        _react2.default.createElement('input', {
+          type: 'checkbox',
+          checked: option.checked || false,
+          onChange: onCheckOne,
+          'data-key': option.key,
+          'data-filter-key': filter.key,
+          className: styles.dropdownCheckboxesCheckbox
+        }),
+        option.value
+      ));
+    }
+
+    return acc;
+  }, []);
 
   return _react2.default.createElement(
     'div',
     {
-      className: (0, _classnames2.default)(styles.dropdownContainer, (0, _defineProperty3.default)({}, styles.expanded, isExpanded)),
-      'data-key': filter.key,
-      onClick: onExpand
+      className: (0, _classnames2.default)(styles.dropdownContainer, (0, _defineProperty3.default)({}, styles.expanded, isExpanded))
     },
     _react2.default.createElement(
       'div',
-      { className: styles.dropdownCheckboxesHead },
+      { // eslint-disable-line
+        className: styles.dropdownCheckboxesHead,
+        'data-key': filter.key,
+        onClick: onExpand
+      },
       remove,
       text,
       adjustedCount,
       caret,
       loading
+    ),
+    _react2.default.createElement(
+      'div',
+      { className: styles.dropdownCheckboxesSearch },
+      _react2.default.createElement('input', { onChange: onSearch, 'data-key': filter.key, className: styles.input }),
+      _react2.default.createElement('div', { className: (0, _classnames2.default)('fa', 'fa-search', styles.icon) })
+    ),
+    _react2.default.createElement(
+      'div',
+      { className: styles.dropdownCheckboxesControls },
+      _react2.default.createElement(
+        'button',
+        { onClick: onCheckAll, 'data-key': filter.key, className: styles.control },
+        'Select All'
+      ),
+      _react2.default.createElement(
+        'span',
+        { className: styles.control },
+        '/'
+      ),
+      _react2.default.createElement(
+        'button',
+        { onClick: onCheckNone, 'data-key': filter.key, className: styles.control },
+        'Clear All'
+      )
     ),
     items
   );
@@ -3517,10 +3592,13 @@ TatariDropdownCheckboxes.propTypes = {
   }).isRequired,
   isExpanded: _react.PropTypes.bool,
   isLoading: _react.PropTypes.bool,
-  onChange: _react.PropTypes.func.isRequired,
+  onCheckOne: _react.PropTypes.func.isRequired,
+  onCheckAll: _react.PropTypes.func.isRequired,
+  onCheckNone: _react.PropTypes.func.isRequired,
   onExpand: _react.PropTypes.func.isRequired,
   onRemove: _react.PropTypes.func.isRequired,
-  options: _react.PropTypes.arrayOf(),
+  onSearch: _react.PropTypes.func.isRequired,
+  options: _react.PropTypes.arrayOf(_react.PropTypes.shape()),
   styles: _react.PropTypes.shape().isRequired
 };
 
@@ -3532,54 +3610,6 @@ TatariDropdownCheckboxes.defaultProps = {
 };
 
 exports.default = TatariDropdownCheckboxes;
-
-// const TatariCheckboxItem = ({
-//   checkAllCheckboxes,
-//   key,
-//   toggleCheckbox,
-//   uncheckAllCheckboxes,
-//   updateUrl
-// }, { item }) => {
-//   const onChange = (evt) => {
-//     toggleCheckbox({ itemKey: item.key, evt });
-//     updateUrl();
-//   };
-//
-//   const onCheckAll = () => {
-//     checkAllCheckboxes(key);
-//     updateUrl();
-//   };
-//
-//   const onUncheckAll = () => {
-//     uncheckAllCheckboxes(key);
-//     updateUrl();
-//   };
-//
-//   if (item === 'SELECTALL') {
-//     return (
-//       <div className={styles['toggle-items-container']}>
-//         <button onClick={onCheckAll} className={styles['select-all-items']}>
-//           Select All
-//         </button>
-//         <span className={styles['toggle-items-divider']}>/</span>
-//         <button onClick={onUncheckAll} className={styles['clear-all-items']}>
-//           Clear All
-//         </button>
-//       </div>
-//     );
-//   }
-//
-//   const id = `tatari-checkbox-item-${item.key}`;
-//
-//   const checked = (item.checked ? 'checked' : null);
-//
-//   return (
-//     <label htmlFor={id} className={styles['checkbox-item']}>
-//       <input type='checkbox' {...{id, value: key, onChange, checked }} />
-//       {item.value}
-//     </label>
-//   );
-// };
 
 /***/ }),
 /* 81 */
@@ -4660,10 +4690,11 @@ exports = module.exports = __webpack_require__(55)();
 
 
 // module
-exports.push([module.i, ".dropdownContainer__src-Tatari__sHXHi {\n  border: 1px solid #ccc;\n  box-sizing: border-box;\n  max-height: 30px;\n  line-height: 30px;\n  overflow: hidden;\n  transition: all 0.5s ease;\n  width: 200px; }\n  .dropdownContainer__src-Tatari__sHXHi.expanded__src-Tatari__1MgWF {\n    height: auto;\n    max-height: 300px; }\n\n.caret__src-Tatari__1ybQ_ {\n  cursor: pointer;\n  font-size: 16px;\n  margin-left: auto;\n  text-align: center;\n  transition: all 0.3s ease;\n  width: 30px; }\n  .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1- {\n    display: block;\n    height: 30px;\n    line-height: 30px;\n    transition: transform 0.3s ease; }\n    .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1-.expanded__src-Tatari__1MgWF {\n      transform: rotate(180deg); }\n  .caret__src-Tatari__1ybQ_:focus {\n    outline: 0; }\n\n.loading__src-Tatari__3Plky {\n  animation-duration: 1.5s;\n  animation-name: spin__src-Tatari__VCSbb;\n  animation-iteration-count: infinite;\n  animation-timing-function: linear;\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz      0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h      0PScxNic+PGVsbGlwc2UgY3g9IjgiIGN5PSI4IiByeD0iNyIgcnk9IjciIHN0      cm9rZS13aWR0aD0iMiIgc3Ryb2tlLW9wYWNpdHk9JzAuNScgc3Ryb2tlPSIjY      2NjIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9J00gMSA4IEEgOCA4IDAgMCAwID      QgMTMuNycgZmlsbD0nbm9uZScgc3Ryb2tlPScjRjQ3RTQyJyAgc3Ryb2tlLXd      pZHRoPScyJyBzdHJva2Utb3BhY2l0eT0nMC44JyAvPjwvc3ZnPg==\");\n  background-position: center center;\n  background-repeat: no-repeat;\n  background-size: 16px 16px;\n  height: 30px;\n  margin-left: auto;\n  width: 30px; }\n\n.dropdownPlainHead__src-Tatari__3tzkR {\n  border-bottom: 1px solid #ccc;\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  padding-left: 10px; }\n  .dropdownPlainHead__src-Tatari__3tzkR:hover {\n    background: #eee; }\n\n.dropdownPlainItem__src-Tatari__BftXM {\n  cursor: pointer;\n  display: block;\n  padding-left: 10px; }\n  .dropdownPlainItem__src-Tatari__BftXM:hover {\n    background: #eee; }\n\n.dropdownCheckboxesHead__src-Tatari__1hCP2 {\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n  .dropdownCheckboxesHead__src-Tatari__1hCP2:hover {\n    background: #eee; }\n\n.count__src-Tatari__2f7DK {\n  margin-right: auto; }\n\n.text__src-Tatari__2TjML {\n  margin-right: 5px;\n  text-align: left; }\n\n.remove__src-Tatari__3vaTX {\n  height: 30px;\n  line-height: 30px;\n  text-align: center;\n  width: 30px; }\n\n.dropdownCheckboxesHeadRemove__src-Tatari___2bpy {\n  height: 30px;\n  line-height: 30px;\n  text-align: center;\n  width: 30px; }\n\n@keyframes spin__src-Tatari__VCSbb {\n  from {\n    transform: rotate(0deg); }\n  to {\n    transform: rotate(360deg); } }\n\n.clearAllFilters__src-Tatari__28RDW {\n  color: #1e519f;\n  cursor: pointer;\n  margin-left: 20px;\n  outline: 0;\n  padding: 0; }\n  .clearAllFilters__src-Tatari__28RDW:hover {\n    color: #f47e42;\n    text-decoration: underline; }\n", ""]);
+exports.push([module.i, "* {\n  box-sizing: border-box;\n  margin: 0;\n  padding: 0; }\n\n.filterContainer__src-Tatari__P4aTc {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n\n.dropdownContainer__src-Tatari__sHXHi {\n  border: 1px solid #ccc;\n  box-sizing: border-box;\n  max-height: 30px;\n  margin-right: 10px;\n  line-height: 30px;\n  overflow: hidden;\n  transition: all 0.5s ease;\n  width: 200px; }\n  .dropdownContainer__src-Tatari__sHXHi.expanded__src-Tatari__1MgWF {\n    height: auto;\n    max-height: 300px; }\n\n.caret__src-Tatari__1ybQ_ {\n  cursor: pointer;\n  font-size: 16px;\n  margin-left: auto;\n  text-align: center;\n  transition: all 0.3s ease;\n  width: 30px; }\n  .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1- {\n    display: block;\n    height: 30px;\n    line-height: 30px;\n    transition: transform 0.3s ease; }\n    .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1-.expanded__src-Tatari__1MgWF {\n      transform: rotate(180deg); }\n  .caret__src-Tatari__1ybQ_:focus {\n    outline: 0; }\n  .caret__src-Tatari__1ybQ_:hover {\n    background: #ddd; }\n\n.loading__src-Tatari__3Plky {\n  animation-duration: 1.5s;\n  animation-name: spin__src-Tatari__VCSbb;\n  animation-iteration-count: infinite;\n  animation-timing-function: linear;\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz      0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h      0PScxNic+PGVsbGlwc2UgY3g9IjgiIGN5PSI4IiByeD0iNyIgcnk9IjciIHN0      cm9rZS13aWR0aD0iMiIgc3Ryb2tlLW9wYWNpdHk9JzAuNScgc3Ryb2tlPSIjY      2NjIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9J00gMSA4IEEgOCA4IDAgMCAwID      QgMTMuNycgZmlsbD0nbm9uZScgc3Ryb2tlPScjRjQ3RTQyJyAgc3Ryb2tlLXd      pZHRoPScyJyBzdHJva2Utb3BhY2l0eT0nMC44JyAvPjwvc3ZnPg==\");\n  background-position: center center;\n  background-repeat: no-repeat;\n  background-size: 16px 16px;\n  height: 30px;\n  margin-left: auto;\n  width: 30px; }\n\n.dropdownPlainHead__src-Tatari__3tzkR {\n  border-bottom: 1px solid #ccc;\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  padding-left: 10px; }\n  .dropdownPlainHead__src-Tatari__3tzkR:hover {\n    background: #eee; }\n\n.dropdownPlainItem__src-Tatari__BftXM {\n  cursor: pointer;\n  display: block;\n  padding-left: 10px; }\n  .dropdownPlainItem__src-Tatari__BftXM:hover {\n    background: #eee; }\n\n.dropdownCheckboxesHead__src-Tatari__1hCP2 {\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n  .dropdownCheckboxesHead__src-Tatari__1hCP2:hover {\n    background: #eee; }\n\n.count__src-Tatari__2f7DK {\n  margin-right: auto; }\n\n.text__src-Tatari__2TjML {\n  margin-right: 5px;\n  text-align: left; }\n\n.dropdownCheckboxesHeadRemove__src-Tatari___2bpy {\n  background: 0;\n  border: 0;\n  cursor: pointer;\n  display: block;\n  height: 30px;\n  line-height: 30px;\n  margin-right: 5px;\n  outline: 0;\n  text-align: center;\n  width: 30px; }\n  .dropdownCheckboxesHeadRemove__src-Tatari___2bpy:hover {\n    background: #ddd; }\n\n.dropdownCheckboxesSearch__src-Tatari__QRP1q {\n  display: block;\n  height: 20px;\n  margin: 5px auto;\n  position: relative;\n  width: 90%; }\n  .dropdownCheckboxesSearch__src-Tatari__QRP1q .input__src-Tatari__3xuGI {\n    display: block;\n    height: 20px;\n    padding-right: 20px;\n    width: 100%; }\n  .dropdownCheckboxesSearch__src-Tatari__QRP1q .icon__src-Tatari__29Irr {\n    font-size: 10px;\n    height: 100%;\n    line-height: 20px;\n    position: absolute;\n    right: 0;\n    text-align: center;\n    top: 0;\n    width: 20px; }\n\n.dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE {\n  background: none;\n  border: 0;\n  color: #1e519f;\n  cursor: pointer;\n  display: inline-block;\n  font-size: 13px;\n  line-height: 20px;\n  margin: 0 3px;\n  padding: 0 !important;\n  vertical-align: top; }\n  .dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE:hover {\n    color: #f47e42 !important;\n    text-decoration: underline !important; }\n  .dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE:focus {\n    outline: 0; }\n\n.dropdownCheckboxesControls__src-Tatari__31bLE .divider__src-Tatari__3_59U {\n  margin: 0 5px; }\n\n.dropdownCheckboxesItem__src-Tatari__3QjOv {\n  cursor: pointer;\n  display: block; }\n  .dropdownCheckboxesItem__src-Tatari__3QjOv:hover {\n    background: #eee; }\n\n.dropdownCheckboxesCheckbox__src-Tatari__2Eayw {\n  cursor: pointer;\n  margin: 0 5px; }\n\n@keyframes spin__src-Tatari__VCSbb {\n  from {\n    transform: rotate(0deg); }\n  to {\n    transform: rotate(360deg); } }\n\n.clearAllFilters__src-Tatari__28RDW {\n  color: #1e519f;\n  cursor: pointer;\n  line-height: 30px;\n  margin-left: 20px;\n  outline: 0;\n  padding: 0; }\n  .clearAllFilters__src-Tatari__28RDW:hover {\n    color: #f47e42;\n    text-decoration: underline; }\n", ""]);
 
 // exports
 exports.locals = {
+	"filterContainer": "filterContainer__src-Tatari__P4aTc",
 	"dropdownContainer": "dropdownContainer__src-Tatari__sHXHi",
 	"expanded": "expanded__src-Tatari__1MgWF",
 	"caret": "caret__src-Tatari__1ybQ_",
@@ -4675,8 +4706,15 @@ exports.locals = {
 	"dropdownCheckboxesHead": "dropdownCheckboxesHead__src-Tatari__1hCP2",
 	"count": "count__src-Tatari__2f7DK",
 	"text": "text__src-Tatari__2TjML",
-	"remove": "remove__src-Tatari__3vaTX",
 	"dropdownCheckboxesHeadRemove": "dropdownCheckboxesHeadRemove__src-Tatari___2bpy",
+	"dropdownCheckboxesSearch": "dropdownCheckboxesSearch__src-Tatari__QRP1q",
+	"input": "input__src-Tatari__3xuGI",
+	"icon": "icon__src-Tatari__29Irr",
+	"dropdownCheckboxesControls": "dropdownCheckboxesControls__src-Tatari__31bLE",
+	"control": "control__src-Tatari__3LdkE",
+	"divider": "divider__src-Tatari__3_59U",
+	"dropdownCheckboxesItem": "dropdownCheckboxesItem__src-Tatari__3QjOv",
+	"dropdownCheckboxesCheckbox": "dropdownCheckboxesCheckbox__src-Tatari__2Eayw",
 	"clearAllFilters": "clearAllFilters__src-Tatari__28RDW"
 };
 

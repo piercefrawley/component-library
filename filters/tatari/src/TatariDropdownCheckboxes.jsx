@@ -5,17 +5,19 @@ const TatariDropdownCheckboxes = ({
   filter,
   isExpanded,
   isLoading,
-  onChange,
+  onCheckOne,
+  onCheckAll,
+  onCheckNone,
   onExpand,
   onRemove,
   onSearch,
   options,
   styles
 }) => {
-  // TODO const adjustedCount = (count ? `(${count})` : null);
   // TODO text wrapping on checkbox items
   // TODO padding and improved styling
-  const adjustedCount = '(6)';
+  const count = options.reduce((acc, option) => (option.checked ? acc + 1 : acc), 0);
+  const adjustedCount = (count ? `(${count})` : null);
 
   const remove = (<button
     className={cx('fa', 'fa-times', styles.dropdownCheckboxesHeadRemove)}
@@ -42,13 +44,14 @@ const TatariDropdownCheckboxes = ({
     if (option.hidden !== true) {
       acc.push(<label
         key={`option-${option.key}`}
-        data-key={option.key}
         className={styles.dropdownCheckboxesItem}
-        onChange={onChange}
       >
         <input
           type='checkbox'
-          checked={option.checked}
+          checked={option.checked || false}
+          onClick={onCheckOne}
+          data-key={option.key}
+          data-filter-key={filter.key}
           className={styles.dropdownCheckboxesCheckbox}
         />
         {option.value}
@@ -79,11 +82,11 @@ const TatariDropdownCheckboxes = ({
     </div>
 
     <div className={styles.dropdownCheckboxesControls}>
-      <button onClick={null} className={styles.control}>
+      <button onClick={onCheckAll} data-key={filter.key} className={styles.control}>
         Select All
       </button>
       <span className={styles.control}>/</span>
-      <button onClick={null} className={styles.control}>
+      <button onClick={onCheckNone} data-key={filter.key} className={styles.control}>
         Clear All
       </button>
     </div>
@@ -100,7 +103,9 @@ TatariDropdownCheckboxes.propTypes = {
   }).isRequired,
   isExpanded: PropTypes.bool,
   isLoading: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
+  onCheckOne: PropTypes.func.isRequired,
+  onCheckAll: PropTypes.func.isRequired,
+  onCheckNone: PropTypes.func.isRequired,
   onExpand: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
   onSearch: PropTypes.func.isRequired,

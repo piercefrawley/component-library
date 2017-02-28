@@ -52,7 +52,7 @@ const urls = {
   available: '/available_filters'
 };
 
-const onFetch = () => {
+const onComplete = () => {
   console.warn("External onFetch called.");  // eslint-disable-line
 };
 
@@ -62,6 +62,6 @@ const stylesheets = [
 ];
 
 render(
-  <Tatari {...{ urls, onFetch, stylesheets }} />,
+  <Tatari {...{ urls, onComplete, stylesheets }} />,
   document.getElementById('root'),
 );
