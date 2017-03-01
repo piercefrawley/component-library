@@ -34,6 +34,7 @@ export default class Tatari extends React.Component {
       expanded: {},
       inactiveFilters: [],
       loading: { inactive: true },
+      // TODO preserve inactive stable ordering
       options: {}
     };
   }
@@ -43,7 +44,12 @@ export default class Tatari extends React.Component {
 
     get(this.props.urls.available)
       .then(({ data }) => {
-        this.setState({ inactiveFilters: data });
+        const inactiveFilters = data.map((filter, index) => {
+          filter.index = index;
+          return filter;
+        });
+
+        this.setState({ inactiveFilters });
 
         // Populate filters from URL first, then try remote retrieve.
         const url = window.location.href.split('?');
@@ -227,7 +233,7 @@ export default class Tatari extends React.Component {
     const index = inactiveFilters.findIndex(filter => filter.key === key);
     const item = inactiveFilters[index];
 
-    inactiveFilters[index].hidden = true;
+    inactiveFilters.splice(index, 1);
     activeFilters.push(item);
 
     if (options[key] === undefined) {
@@ -249,22 +255,22 @@ export default class Tatari extends React.Component {
     const { activeFilters, inactiveFilters } = this.state;
 
     const key = evt.target.dataset.key;
-    const activeIndex = activeFilters.findIndex(filter => filter.key === key);
-    const inactiveIndex = inactiveFilters.findIndex(filter => filter.key === key);
+    const index = activeFilters.findIndex(filter => filter.key === key);
+    const item = activeFilters[index];
 
-    activeFilters.splice(activeIndex, 1);
-    inactiveFilters[inactiveIndex].hidden = false;
+    activeFilters.splice(index, 1);
+    inactiveFilters.push(item);
+    inactiveFilters.sort((a, b) => (a.index - b.index));
+
     this.setState({ inactiveFilters, activeFilters });
   }
 
   removeAllActive = () => {
     // TODO URL update
     const { activeFilters, inactiveFilters } = this.state;
-    inactiveFilters.forEach(filter => {
-      filter.hidden = false;
-    });
+    const inactive = inactiveFilters.concat(activeFilters).sort((a, b) => (a.index - b.index));
 
-    this.setState({ inactiveFilters, activeFilters: [] });
+    this.setState({ inactiveFilters: inactive, activeFilters: [] });
   }
 
   removeEmptyActive = () => {
@@ -274,9 +280,7 @@ export default class Tatari extends React.Component {
   }
 
   render() {
-    const showInactive = (this.state.inactiveFilters.length !== this.state.activeFilters.length);
-
-    const inactiveFilters = showInactive
+    const inactiveFilters = this.state.inactiveFilters.length
       ? (<TatariDropdownPlain
         data={this.state.inactiveFilters}
         isExpanded={this.state.expanded.inactive}
