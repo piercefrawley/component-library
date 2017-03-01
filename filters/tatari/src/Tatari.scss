@@ -34,7 +34,15 @@ $searchH: 20px;
   box-sizing: border-box;
   margin-right: 10px;
   line-height: $h;
+  opacity: 1;
+  transition: all 0.2s ease;
   width: 200px;
+
+  &.hiding {
+    margin-right: 0;
+    opacity: 0;
+    width: 0;
+  }
 }
 
 .dropdownHead {

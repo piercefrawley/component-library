@@ -4,6 +4,7 @@ import cx from 'classnames';
 const TatariDropdownCheckboxes = ({
   filter,
   isExpanded,
+  isHiding,
   isLoading,
   onCheckOne,
   onCheckAll,
@@ -59,7 +60,7 @@ const TatariDropdownCheckboxes = ({
     return acc;
   }, []);
 
-  return (<div className={styles.dropdownContainer}>
+  return (<div className={cx(styles.dropdownContainer, { [styles.hiding]: isHiding })}>
     <div // eslint-disable-line
       className={styles.dropdownHead}
       data-key={filter.key}
@@ -100,6 +101,7 @@ TatariDropdownCheckboxes.propTypes = {
     value: PropTypes.string
   }).isRequired,
   isExpanded: PropTypes.bool,
+  isHiding: PropTypes.bool,
   isLoading: PropTypes.bool,
   onCheckOne: PropTypes.func.isRequired,
   onCheckAll: PropTypes.func.isRequired,
@@ -113,6 +115,7 @@ TatariDropdownCheckboxes.propTypes = {
 
 TatariDropdownCheckboxes.defaultProps = {
   isExpanded: false,
+  isHiding: true,
   isLoading: false,
   options: [],
   styles: {}

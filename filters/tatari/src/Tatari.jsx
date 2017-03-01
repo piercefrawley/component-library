@@ -34,6 +34,7 @@ export default class Tatari extends React.Component {
       activeFilters: [],
       expanded: {},
       inactiveFilters: [],
+      hiding: {},
       loading: {},
       options: {}
     };
@@ -195,6 +196,18 @@ export default class Tatari extends React.Component {
     this.setState({ options });
   }
 
+  animateRemove = (evt) => {
+    evt.stopPropagation();
+    const key = evt.target.dataset.key;
+    const hiding = Object.assign(this.state.hiding, { [key]: true });
+
+    const animationFinished = () => {
+      this.removeActive(key);
+    };
+
+    this.setState({ hiding }, setTimeout.bind(null, animationFinished, 300));
+  }
+
   addActive = (evt) => {
     evt.stopPropagation();
 
@@ -208,13 +221,18 @@ export default class Tatari extends React.Component {
     inactiveFilters.splice(index, 1);
     activeFilters.push(item);
 
-    function retrieveOptions() {
+    const retrieveOptions = () => {
       if (options[key] === undefined) {
         return get(item.endpoint);
       }
 
-      return { data: options[key] };
-    }
+      return Promise.resolve({ data: options[key] });
+    };
+
+    const animationFinished = () => {
+      const hiding = Object.assign(this.state.hiding, { [key]: false });
+      this.setState({ hiding });
+    };
 
     retrieveOptions().then(({ data }) => {
       options[key] = data.map(d => Object.assign(d, { checked: false }));
@@ -223,15 +241,13 @@ export default class Tatari extends React.Component {
       this.setState({ options, loading: newLoading });
     });
 
-    this.setState({ inactiveFilters, activeFilters, loading, expanded: {} });
+    this.setState({ inactiveFilters, activeFilters, loading, expanded: {} }, setTimeout.bind(null, animationFinished, 300));
   }
 
-  removeActive = (evt) => {
-    evt.stopPropagation();
-
+  removeActive = (key) => {
     const { activeFilters, inactiveFilters } = this.state;
+    const hiding = Object.assign(this.state.hiding, { [key]: true });
 
-    const key = evt.target.dataset.key;
     const index = activeFilters.findIndex(filter => filter.key === key);
     const item = activeFilters[index];
 
@@ -239,12 +255,11 @@ export default class Tatari extends React.Component {
     inactiveFilters.push(item);
     inactiveFilters.sort((a, b) => (a.index - b.index));
 
-    this.setState({ inactiveFilters, activeFilters });
+    this.setState({ inactiveFilters, activeFilters, hiding });
   }
 
   removeAllActive = () => {
     // TODO URL update
-    // TODO collapse animation
     const { activeFilters, inactiveFilters } = this.state;
     const inactive = inactiveFilters.concat(activeFilters)
       .sort((a, b) => (a.index - b.index));
@@ -294,12 +309,13 @@ export default class Tatari extends React.Component {
         key={`active-${item.key}`}
         filter={item}
         isExpanded={this.state.expanded[item.key]}
+        isHiding={this.state.hiding[item.key]}
         isLoading={this.state.loading[item.key]}
         onCheckOne={this.checkOne}
         onCheckAll={this.checkAll}
         onCheckNone={this.checkNone}
         onExpand={this.onExpand}
-        onRemove={this.removeActive}
+        onRemove={this.animateRemove}
         onSearch={this.onSearch}
         options={this.state.options[item.key]}
         styles={styles}
