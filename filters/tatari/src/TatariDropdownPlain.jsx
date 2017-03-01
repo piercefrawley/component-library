@@ -38,12 +38,12 @@ const TatariDropdownPlain = ({
       />
     </div>);
 
-  return (<div
-    className={styles.dropdownContainer}
-    data-key={'inactive'}
-    onClick={onExpand}
-  >
-    <div className={styles.dropdownHead}>
+  return (<div className={styles.dropdownContainer}>
+    <div
+      className={styles.dropdownHead}
+      data-key={'inactive'}
+      onClick={onExpand}
+    >
       {text}
       {caret}
       {loading}

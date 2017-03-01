@@ -24,7 +24,7 @@ const TatariDropdownCheckboxes = ({
   />);
 
   const loading = (isLoading
-    ? <span className={styles.activeLoading} />
+    ? <span className={styles.dropdownLoading} />
     : null);
 
   const caret = isLoading
@@ -47,7 +47,7 @@ const TatariDropdownCheckboxes = ({
         <input
           type='checkbox'
           checked={option.checked || false}
-          onClick={onCheckOne}
+          onChange={onCheckOne}
           data-key={option.key}
           data-filter-key={filter.key}
           className={styles.activeCheckbox}
@@ -59,9 +59,11 @@ const TatariDropdownCheckboxes = ({
     return acc;
   }, []);
 
-  return (<div className={styles.dropdownContainer} data-key={filter.key} onClick={onExpand}>
+  return (<div className={styles.dropdownContainer}>
     <div // eslint-disable-line
       className={styles.dropdownHead}
+      data-key={filter.key}
+      onClick={onExpand}
     >
       {remove}
       {text}

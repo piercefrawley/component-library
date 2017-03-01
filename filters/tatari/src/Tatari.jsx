@@ -15,8 +15,9 @@ export default class Tatari extends React.Component {
     onComplete: PropTypes.func.isRequired,
     stylesheets: PropTypes.arrayOf(PropTypes.shape()),
     urls: PropTypes.shape({
-      saved: PropTypes.string,
-      available: PropTypes.string.isRequired
+      available: PropTypes.string.isRequired,
+      patch: PropTypes.string,
+      saved: PropTypes.string
     }).isRequired
   }
 
@@ -33,8 +34,7 @@ export default class Tatari extends React.Component {
       activeFilters: [],
       expanded: {},
       inactiveFilters: [],
-      loading: { inactive: true },
-      // TODO preserve inactive stable ordering
+      loading: {},
       options: {}
     };
   }
@@ -42,57 +42,56 @@ export default class Tatari extends React.Component {
   componentDidMount() {
     window.addEventListener('click', this.onBlur);
 
-    get(this.props.urls.available)
-      .then(({ data }) => {
-        const inactiveFilters = data.map((filter, index) => {
-          filter.index = index;
-          return filter;
-        });
-
-        this.setState({ inactiveFilters });
-
-        // Populate filters from URL first, then try remote retrieve.
-        const url = window.location.href.split('?');
-        const params = qs.parse(url[1]);
-        if (params.filters) {
-          // TODO is this correct
-          return { data: params.filters };
+    Promise.all([
+      get(this.props.urls.available),
+      get(this.props.urls.saved)
+    ])
+    .then(([{ data: availableFilters }, { data: saved }]) => {
+      const activeFilters = availableFilters.reduce((acc, filter, index) => {
+        if (saved[filter.key] !== undefined) {
+          acc.push(Object.assign(filter, { index }));
         }
 
-        return get(this.props.urls.saved);
-      })
-      .then(({ data }) => {
-        // SAMPLE: {ball_in_court_id: ["1228193", "1188710"]}
-        const keys = Object.keys(data);
+        return acc;
+      }, []);
 
-        // if (keys.length === 0) {
-        //
+      const inactiveFilters = availableFilters.reduce((acc, filter, index) => {
+        if (saved[filter.key] === undefined) {
+          acc.push(Object.assign(filter, { index }));
+        }
+
+        return acc;
+      }, []);
+
+      const loading = availableFilters.reduce((acc, filter) =>
+        Object.assign(acc, { [filter.key]: saved[filter.key] !== undefined }),
+        {});
+
+      this.setState({ inactiveFilters, activeFilters, loading });
+
+      Promise.all(activeFilters.map(filter => get(filter.endpoint)))
+        .then((values) => {
+          const options = activeFilters.reduce((acc, filter, index) => {
+            const { data } = values[index];
+
+            const setChecked = d =>
+              Object.assign(d, { checked: (saved[filter.key].indexOf(d.key) > -1) });
+
+            return Object.assign(acc, { [filter.key]: data.map(setChecked) });
+          }, {});
+
+          this.setState({ options, loading: {} });
+        });
+    })
+    .catch(e => { console.error(e); }) // eslint-disable-line
+
+        // Populate filters from URL first, then try remote retrieve.
+        // const url = window.location.href.split('?');
+        // const params = qs.parse(url[1]);
+        // if (params.filters) {
+        //   // TODO is this correct
+        //   return { data: params.filters };
         // }
-
-        // this.setState({ activeFilters: data });
-
-        //     const filterData = availableFiltersSelector(getState()).reduce(
-        //       (acc, v) => Object.assign(acc, { [v.key]: v }), {});
-        //
-        //     Object.keys(params.filters).forEach(async (key) => {
-
-                //  await dispatch(activeAdd(filterData[key]));
-
-        //
-        //       params.filters[key].forEach((v) => {
-        //           toggleCheckbox(
-        //             { itemKey: v, evt: { target: { value: key, checked: true }}},
-        //           ),
-        //         );
-        //
-        //       delete params.filters[key];
-        //
-        //       if (Object.keys(params.filters).length === 0) {
-        //         dispatch(initResolve);
-        //       }
-      })
-      .catch(e => { console.error(e); }) // eslint-disable-line
-      .then(() => { this.setState({ loading: {} }); });
   }
 
   onExpand = (evt) => {
@@ -102,21 +101,21 @@ export default class Tatari extends React.Component {
       return;
     }
 
-    // TODO this.props.activeRemoveEmpty();
 
-    const expanded = { [key]: !this.state.expanded[key] };
+    const expandedStatus = !this.state.expanded[key];
+
+    if (expandedStatus === false && key !== 'inactive') {
+      this.saveOptions();
+    }
+
+    const expanded = { [key]: expandedStatus };
 
     this.setState({ expanded });
   }
 
   onBlur = () => {
+    // TODO this.removeEmptyActive();
     this.setState({ expanded: {} });
-
-    // if (this.state.activeFilters.length) {
-      // activeRemoveEmpty();
-      // activeSetAllClosed();
-      // storedPatch(persistenceUrl);
-    // }
   }
 
   onSearch = (evt) => {
@@ -133,53 +132,27 @@ export default class Tatari extends React.Component {
     this.setState({ options });
   }
 
-  onChange = () => {
-    // this.props.onComplete();
+  saveOptions = () => {
+    const { options } = this.state;
 
-      // if (restoreUrl === undefined) { // NOT TRUE!
-      //   return { data: [] };
-      // }
+    const reduceSingle = (acc, value) => {
+      if (value.key && value.checked === true) {
+        acc.push(value.key);
+      }
 
-      // Populate filters from URL first, then try remote retrieve.
-      // const url = window.location.href.split('?');
-      // const params = qs.parse(url[1]);
-      // return params.filters;
+      return acc;
+    };
 
-    // export const storedPatch = url => async (dispatch, getState) => {
-    //   dispatch(storedPatchRequest());
-    //
-    //   const payload = { filters: reduceAllFilters(getState)};
-    //
-    //   if (Object.keys(payload.filters).length === 0) {
-    //     return;
-    //   }
-    //
-    //   try {
-    //     await patch(url, payload);
-    //     dispatch(storedPatchResolve());
-    //   } catch (e) {
-    //     dispatch(storedPatchReject(e));
-    //   }
-    // };
-    // // ===== Helper functions
-    // const reduceAllFilters = (getState) => {
-    //   const filterData = activeFiltersSelector(getState());
-    //
-    //   const reduceSingle = (acc, value) => {
-    //     if (value.key && value.checked === true) {
-    //       acc.push(value.key);
-    //     }
-    //
-    //     return acc;
-    //   };
-    //
-    //   const reduceAll = (acc, values, key) => {
-    //     acc[key] = values.reduce(reduceSingle, []);
-    //     return acc;
-    //   };
-    //
-    //   return filterData.reduce(reduceAll, {});
-    // };
+    const reduceAll = (acc, key) =>
+      Object.assign(acc, { [key]: options[key].reduce(reduceSingle, []) });
+
+    const payload = { filters: Object.keys(options).reduce(reduceAll, {}) };
+
+    if (Object.keys(payload.filters).length === 0) {
+      return;
+    }
+
+    patch(this.props.urls.patch, payload).then(this.props.onComplete);
   }
 
   checkOne = (evt) => {
@@ -207,7 +180,6 @@ export default class Tatari extends React.Component {
     options[key].reduce((acc, option) =>
       acc.concat(Object.assign(option, { checked: true })), []);
 
-    // Not sure why this works _without_ resetting the state? Ben 170228
     this.setState({ options });
   }
 
@@ -220,7 +192,6 @@ export default class Tatari extends React.Component {
     options[key].reduce((acc, option) =>
       Object.assign(option, { checked: false }), []);
 
-    // See above.
     this.setState({ options });
   }
 
@@ -233,18 +204,24 @@ export default class Tatari extends React.Component {
     const index = inactiveFilters.findIndex(filter => filter.key === key);
     const item = inactiveFilters[index];
 
+    loading[key] = true;
     inactiveFilters.splice(index, 1);
     activeFilters.push(item);
 
-    if (options[key] === undefined) {
-      loading[key] = true;
-      get(item.endpoint).then(({ data }) => {
-        options[key] = data;
-        const newLoading = this.state.loading;
-        newLoading[key] = false;
-        this.setState({ loading: newLoading });
-      });
+    function retrieveOptions() {
+      if (options[key] === undefined) {
+        return get(item.endpoint);
+      }
+
+      return { data: options[key] };
     }
+
+    retrieveOptions().then(({ data }) => {
+      options[key] = data.map(d => Object.assign(d, { checked: false }));
+      const newLoading = this.state.loading;
+      newLoading[key] = false;
+      this.setState({ options, loading: newLoading });
+    });
 
     this.setState({ inactiveFilters, activeFilters, loading, expanded: {} });
   }
@@ -267,16 +244,37 @@ export default class Tatari extends React.Component {
 
   removeAllActive = () => {
     // TODO URL update
+    // TODO collapse animation
     const { activeFilters, inactiveFilters } = this.state;
-    const inactive = inactiveFilters.concat(activeFilters).sort((a, b) => (a.index - b.index));
+    const inactive = inactiveFilters.concat(activeFilters)
+      .sort((a, b) => (a.index - b.index));
 
     this.setState({ inactiveFilters: inactive, activeFilters: [] });
   }
 
   removeEmptyActive = () => {
-    const { activeFilters, inactiveFilters } = this.state;
-
-
+    // const { activeFilters, inactiveFilters } = this.state;
+    //
+    // const activeUpdated = activeFilters.reduce((activeAcc, filter) => {
+    //   const isPopulated = this.state.options[filter.key]
+    //     .reduce((acc, option) => acc || option.checked, false);
+    //
+    //   if (isPopulated === false) {
+    //     this.state.options[filter.key].forEach((option) => { option.checked = false; });
+    //     inactiveFilters.push(filter);
+    //   } else {
+    //     activeAcc.push(filter);
+    //   }
+    //
+    //   return activeAcc;
+    // }, []);
+    //
+    // inactiveFilters.sort((a, b) => (a.index - b.index));
+    //
+    // this.setState({
+    //   activeFilters: activeUpdated,
+    //   inactiveFilters
+    // });
   }
 
   render() {
@@ -297,7 +295,6 @@ export default class Tatari extends React.Component {
         filter={item}
         isExpanded={this.state.expanded[item.key]}
         isLoading={this.state.loading[item.key]}
-        onChange={() => {}}
         onCheckOne={this.checkOne}
         onCheckAll={this.checkAll}
         onCheckNone={this.checkNone}

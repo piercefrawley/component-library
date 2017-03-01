@@ -45,8 +45,9 @@ mockApi
   ]);
 
 const urls = {
-  saved: '/saved_filters',
-  available: '/available_filters'
+  available: '/available_filters',
+  patch: null,
+  saved: '/saved_filters'
 };
 
 const onComplete = () => {
