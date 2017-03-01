@@ -107,20 +107,14 @@ export default class Tatari extends React.Component {
   onBlur = () => {
     this.setState({ expanded: {} });
 
-    // const openFilters = isOpen
-    //   .reduce((acc, v) => { return (v ? acc + 1 : acc); }, 0);
-    //
-    // if (openFilters > 0) {
-    //   activeRemoveEmpty();
-    //   activeSetAllClosed();
-    //   storedPatch(persistenceUrl);
-    //   onComplete();
+    // if (this.state.activeFilters.length) {
+      // activeRemoveEmpty();
+      // activeSetAllClosed();
+      // storedPatch(persistenceUrl);
     // }
   }
 
   onSearch = (evt) => {
-    // TODO throttle
-
     const value = evt.target.value.toLowerCase();
     const key = evt.target.dataset.key;
 
@@ -132,6 +126,55 @@ export default class Tatari extends React.Component {
     options[key] = filteredOptions;
 
     this.setState({ options });
+  }
+
+  onChange = () => {
+    // this.props.onComplete();
+
+      // if (restoreUrl === undefined) { // NOT TRUE!
+      //   return { data: [] };
+      // }
+
+      // Populate filters from URL first, then try remote retrieve.
+      // const url = window.location.href.split('?');
+      // const params = qs.parse(url[1]);
+      // return params.filters;
+
+    // export const storedPatch = url => async (dispatch, getState) => {
+    //   dispatch(storedPatchRequest());
+    //
+    //   const payload = { filters: reduceAllFilters(getState)};
+    //
+    //   if (Object.keys(payload.filters).length === 0) {
+    //     return;
+    //   }
+    //
+    //   try {
+    //     await patch(url, payload);
+    //     dispatch(storedPatchResolve());
+    //   } catch (e) {
+    //     dispatch(storedPatchReject(e));
+    //   }
+    // };
+    // // ===== Helper functions
+    // const reduceAllFilters = (getState) => {
+    //   const filterData = activeFiltersSelector(getState());
+    //
+    //   const reduceSingle = (acc, value) => {
+    //     if (value.key && value.checked === true) {
+    //       acc.push(value.key);
+    //     }
+    //
+    //     return acc;
+    //   };
+    //
+    //   const reduceAll = (acc, values, key) => {
+    //     acc[key] = values.reduce(reduceSingle, []);
+    //     return acc;
+    //   };
+    //
+    //   return filterData.reduce(reduceAll, {});
+    // };
   }
 
   checkOne = (evt) => {
@@ -221,6 +264,12 @@ export default class Tatari extends React.Component {
     const inactive = inactiveFilters.concat(activeFilters);
 
     this.setState({ inactiveFilters: inactive, activeFilters: [] });
+  }
+
+  removeEmptyActive = () => {
+    const { activeFilters, inactiveFilters } = this.state;
+
+
   }
 
   render() {

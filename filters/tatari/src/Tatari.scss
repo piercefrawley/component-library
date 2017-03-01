@@ -1,7 +1,8 @@
 @import "./variables";
 
 $h: 30px;
-$delay: 0.5s;
+$p: 10px;
+$delay: 0.2s;
 $searchH: 20px;
 
 * {
@@ -15,29 +16,70 @@ $searchH: 20px;
   flex-direction: row;
 }
 
+.clearAllFilters {
+  color: #1e519f;
+  cursor: pointer;
+  line-height: $h;
+  margin-left: 20px;
+  outline: 0;
+  padding: 0;
+
+  &:hover {
+    color: palette(orange);
+    text-decoration: underline;
+  }
+}
+
 .dropdownContainer {
-  border: 1px solid #ccc;
   box-sizing: border-box;
-  max-height: $h;
   margin-right: 10px;
   line-height: $h;
-  overflow: hidden;
-  transition: all $delay ease;
   width: 200px;
+}
+
+.dropdownHead {
+  border: 1px solid #ccc;
+  cursor: pointer;
+  display: flex;
+  padding-left: 10px;
+
+  &:hover {
+    background: #eee;
+  }
+
+  &:focus {
+    outline: 0;
+  }
+}
+
+.dropdownBody {
+  max-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: all $delay ease;
 
   &.expanded {
+    border: 1px solid #ccc;
+    border-top: 0;
     height: auto;
     max-height: 300px;
   }
 }
 
-.caret {
+.dropdownTitle {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdownCaret {
   cursor: pointer;
   font-size: 16px;
   margin-left: auto;
+  min-width: $h;
   text-align: center;
   transition: all 0.3s ease;
-  width: $h;
 
   .arrow {
     display: block;
@@ -59,7 +101,7 @@ $searchH: 20px;
   }
 }
 
-.loading {
+.dropdownLoading {
   animation-duration: 1.5s;
   animation-name: spin;
   animation-iteration-count: infinite;
@@ -82,129 +124,109 @@ $searchH: 20px;
   width: $h;
 }
 
-.dropdownPlainHead {
-  border-bottom: 1px solid #ccc;
+.inactiveItem {
   cursor: pointer;
-  display: flex;
-  padding-left: 10px;
+  padding: 0 $p;
 
   &:hover {
     background: #eee;
   }
 }
 
-.dropdownPlainItem {
-  cursor: pointer;
-  display: block;
-  padding-left: 10px;
-
-  &:hover {
-    background: #eee;
-  }
+.activeCount {
+  margin: 0 5px;
 }
 
-.dropdownCheckboxesHead {
-  cursor: pointer;
-  display: flex;
-  flex-direction: row;
-
-  &:hover {
-    background: #eee;
-  }
-}
-
-.count {
-  margin-right: auto;
-}
-
-.text {
-  margin-right: 5px;
-  text-align: left;
-}
-
-.dropdownCheckboxesHeadRemove {
+.activeRemove {
   background: 0;
   border: 0;
   cursor: pointer;
   display: block;
   height: $h;
   line-height: $h;
-  margin-right: 5px;
+  margin-left: -$p;
+  min-width: $h;
   outline: 0;
   text-align: center;
-  width: $h;
 
   &:hover {
     background: #ddd;
   }
 }
 
-.dropdownCheckboxesSearch {
+.activeSearch {
+  height: $searchH;
+  margin-top: 10px;
+  padding: 0 $p;
+  position: relative;
+  width: 100%;
+}
+
+.activeInput {
   display: block;
   height: $searchH;
-  margin: 5px auto;
-  position: relative;
-  width: 90%;
-
-  .input {
-    display: block;
-    height: $searchH;
-    padding-right: $searchH;
-    width: 100%;
-  }
-
-  .icon {
-    font-size: $searchH / 2;
-    height: 100%;
-    line-height: $searchH;
-    position: absolute;
-    right: 0;
-    text-align: center;
-    top: 0;
-    width: $searchH;
-  }
+  padding-right: $searchH;
+  width: 100%;
 }
 
-.dropdownCheckboxesControls {
-  .control {
-    background: none;
-    border: 0;
-    color: #1e519f;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 13px;
-    line-height: 20px;
-    margin: 0 3px;
-    padding: 0 !important;
-    vertical-align: top;
-
-    &:hover {
-      color: palette(orange) !important;
-      text-decoration: underline !important;
-    }
-
-    &:focus {
-      outline: 0;
-    }
-  }
-
-  .divider {
-    margin: 0 5px;
-  }
+.activeIcon {
+  font-size: $searchH / 2;
+  height: 100%;
+  line-height: $searchH;
+  position: absolute;
+  right: $p;
+  text-align: center;
+  top: 0;
+  width: $searchH;
 }
 
-.dropdownCheckboxesItem {
+.activeControls {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  padding: 0 $p;
+}
+
+.activeControl {
+  background: none;
+  border: 0;
+  color: #1e519f;
   cursor: pointer;
-  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  margin: 0 3px;
+  padding: 0 !important;
+  vertical-align: top;
+
+  &:hover {
+    color: palette(orange) !important;
+    text-decoration: underline !important;
+  }
+
+  &:focus {
+    outline: 0;
+  }
+}
+
+.activeDivider {
+  margin: 0 5px;
+}
+
+.activeItem {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  padding: 0 $p;
 
   &:hover {
     background: #eee;
   }
 }
 
-.dropdownCheckboxesCheckbox {
+.activeCheckbox {
   cursor: pointer;
-  margin: 0 5px;
+  margin-right: 15px;
 }
 
 @keyframes spin {
@@ -214,19 +236,5 @@ $searchH: 20px;
 
   to {
     transform: rotate(360deg);
-  }
-}
-
-.clearAllFilters {
-  color: #1e519f;
-  cursor: pointer;
-  line-height: $h;
-  margin-left: 20px;
-  outline: 0;
-  padding: 0;
-
-  &:hover {
-    color: palette(orange);
-    text-decoration: underline;
   }
 }

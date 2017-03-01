@@ -2,14 +2,11 @@ import { render } from 'react-dom';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import React from 'react';
-
 import Tatari from '../src';
-
-const mockApi = new MockAdapter(axios);
-
 import defaultStyles from '../src/TatariDefault.scss';
 import sandboxStyles from './sandbox.scss';
 
+const mockApi = new MockAdapter(axios);
 
 mockApi
 .onGet('/saved_filters')
@@ -19,7 +16,7 @@ mockApi
     {
       endpoint: '/filterA',
       key: 'ball_in_court_id',
-      value: 'Ball In Court'
+      value: 'Ball In Court With A Very Long Name That Hopefully Wraps'
     },
     {
       endpoint: '/filterB',
@@ -29,8 +26,8 @@ mockApi
   ])
 .onGet('/filterA')
   .reply(200, [
-      { key: 1309646, value: 'Test A' },
-      { key: 1228193, value: "Test A'postrophe" },
+      { key: 1309646, value: 'Test A With Another Very Long Name That Hopefully Wraps' },
+      { key: 1228193, value: "Test A'postrophe And Oh My Gosh More Wrapping" },
       { key: 1188710, value: 'Test Add' },
       { key: 1273550, value: 'Full Admin' },
       { key: 1390306, value: 'Blah Blah' },

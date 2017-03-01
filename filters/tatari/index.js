@@ -2304,20 +2304,15 @@ var Tatari = (_temp = _class = function (_React$Component) {
     _this.onBlur = function () {
       _this.setState({ expanded: {} });
 
-      // const openFilters = isOpen
-      //   .reduce((acc, v) => { return (v ? acc + 1 : acc); }, 0);
-      //
-      // if (openFilters > 0) {
-      //   activeRemoveEmpty();
-      //   activeSetAllClosed();
-      //   storedPatch(persistenceUrl);
-      //   onChange();
+      // if (this.state.activeFilters.length) {
+      // activeRemoveEmpty();
+      // activeSetAllClosed();
+      // storedPatch(persistenceUrl);
+      // this.props.onComplete(); TODO SHOULD ONLY TRIGGER ONCE
       // }
     };
 
     _this.onSearch = function (evt) {
-      // TODO throttle
-
       var value = evt.target.value.toLowerCase();
       var key = evt.target.dataset.key;
 
@@ -2332,7 +2327,56 @@ var Tatari = (_temp = _class = function (_React$Component) {
       _this.setState({ options: options });
     };
 
+    _this.onChange = function () {
+      // if (restoreUrl === undefined) { // NOT TRUE!
+      //   return { data: [] };
+      // }
+
+      // Populate filters from URL first, then try remote retrieve.
+      // const url = window.location.href.split('?');
+      // const params = qs.parse(url[1]);
+      // return params.filters;
+
+      // export const storedPatch = url => async (dispatch, getState) => {
+      //   dispatch(storedPatchRequest());
+      //
+      //   const payload = { filters: reduceAllFilters(getState)};
+      //
+      //   if (Object.keys(payload.filters).length === 0) {
+      //     return;
+      //   }
+      //
+      //   try {
+      //     await patch(url, payload);
+      //     dispatch(storedPatchResolve());
+      //   } catch (e) {
+      //     dispatch(storedPatchReject(e));
+      //   }
+      // };
+      // // ===== Helper functions
+      // const reduceAllFilters = (getState) => {
+      //   const filterData = activeFiltersSelector(getState());
+      //
+      //   const reduceSingle = (acc, value) => {
+      //     if (value.key && value.checked === true) {
+      //       acc.push(value.key);
+      //     }
+      //
+      //     return acc;
+      //   };
+      //
+      //   const reduceAll = (acc, values, key) => {
+      //     acc[key] = values.reduce(reduceSingle, []);
+      //     return acc;
+      //   };
+      //
+      //   return filterData.reduce(reduceAll, {});
+      // };
+    };
+
     _this.checkOne = function (evt) {
+      evt.stopPropagation();
+
       var options = _this.state.options;
 
       var key = evt.target.dataset.key;
@@ -2344,10 +2388,12 @@ var Tatari = (_temp = _class = function (_React$Component) {
         }
       });
 
-      _this.setState({ options: options });
+      _this.setState({ options: options, expanded: (0, _assign2.default)(_this.state.expanded, (0, _defineProperty3.default)({}, filterKey, true)) });
     };
 
     _this.checkAll = function (evt) {
+      evt.stopPropagation();
+
       var key = evt.target.dataset.key;
       var options = _this.state.options;
 
@@ -2357,10 +2403,12 @@ var Tatari = (_temp = _class = function (_React$Component) {
       }, []);
 
       // Not sure why this works _without_ resetting the state? Ben 170228
-      // this.setState({ options });
+      _this.setState({ options: options });
     };
 
     _this.checkNone = function (evt) {
+      evt.stopPropagation();
+
       var key = evt.target.dataset.key;
       var options = _this.state.options;
 
@@ -2369,7 +2417,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
       }, []);
 
       // See above.
-      // this.setState({ options });
+      _this.setState({ options: options });
     };
 
     _this.addActive = function (evt) {
@@ -2434,6 +2482,12 @@ var Tatari = (_temp = _class = function (_React$Component) {
       var inactive = inactiveFilters.concat(activeFilters);
 
       _this.setState({ inactiveFilters: inactive, activeFilters: [] });
+    };
+
+    _this.removeEmptyActive = function () {
+      var _this$state4 = _this.state,
+          activeFilters = _this$state4.activeFilters,
+          inactiveFilters = _this$state4.inactiveFilters;
     };
 
     styles = (0, _stylesheetComposer2.default)(_Tatari2.default, props.stylesheets);
@@ -2515,9 +2569,8 @@ var Tatari = (_temp = _class = function (_React$Component) {
 
       var inactiveFilters = this.state.inactiveFilters.length ? _react2.default.createElement(_TatariDropdownPlain2.default, {
         data: this.state.inactiveFilters,
-        isExpanded: true
-        // isExpanded={this.state.expanded.inactive}
-        , isLoading: this.state.loading.inactive,
+        isExpanded: this.state.expanded.inactive,
+        isLoading: this.state.loading.inactive,
         onChange: this.addActive,
         onExpand: this.onExpand,
         styles: styles
@@ -2527,9 +2580,8 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return _react2.default.createElement(_TatariDropdownCheckboxes2.default, {
           key: 'active-' + item.key,
           filter: item,
-          isExpanded: true
-          // isExpanded={this.state.expanded[item.key]}
-          , isLoading: _this3.state.loading[item.key],
+          isExpanded: _this3.state.expanded[item.key],
+          isLoading: _this3.state.loading[item.key],
           onChange: function onChange() {},
           onCheckOne: _this3.checkOne,
           onCheckAll: _this3.checkAll,
@@ -2562,7 +2614,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
   }]);
   return Tatari;
 }(_react2.default.Component), _class.propTypes = {
-  onFetch: _react.PropTypes.func.isRequired,
+  onComplete: _react.PropTypes.func.isRequired,
   stylesheets: _react.PropTypes.arrayOf(_react.PropTypes.shape()),
   urls: _react.PropTypes.shape({
     saved: _react.PropTypes.string,
@@ -3525,7 +3577,7 @@ var TatariDropdownCheckboxes = function TatariDropdownCheckboxes(_ref) {
         _react2.default.createElement('input', {
           type: 'checkbox',
           checked: option.checked || false,
-          onChange: onCheckOne,
+          onClick: onCheckOne,
           'data-key': option.key,
           'data-filter-key': filter.key,
           className: styles.dropdownCheckboxesCheckbox
@@ -4690,7 +4742,7 @@ exports = module.exports = __webpack_require__(55)();
 
 
 // module
-exports.push([module.i, "* {\n  box-sizing: border-box;\n  margin: 0;\n  padding: 0; }\n\n.filterContainer__src-Tatari__P4aTc {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n\n.dropdownContainer__src-Tatari__sHXHi {\n  border: 1px solid #ccc;\n  box-sizing: border-box;\n  max-height: 30px;\n  margin-right: 10px;\n  line-height: 30px;\n  overflow: hidden;\n  transition: all 0.5s ease;\n  width: 200px; }\n  .dropdownContainer__src-Tatari__sHXHi.expanded__src-Tatari__1MgWF {\n    height: auto;\n    max-height: 300px; }\n\n.caret__src-Tatari__1ybQ_ {\n  cursor: pointer;\n  font-size: 16px;\n  margin-left: auto;\n  text-align: center;\n  transition: all 0.3s ease;\n  width: 30px; }\n  .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1- {\n    display: block;\n    height: 30px;\n    line-height: 30px;\n    transition: transform 0.3s ease; }\n    .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1-.expanded__src-Tatari__1MgWF {\n      transform: rotate(180deg); }\n  .caret__src-Tatari__1ybQ_:focus {\n    outline: 0; }\n  .caret__src-Tatari__1ybQ_:hover {\n    background: #ddd; }\n\n.loading__src-Tatari__3Plky {\n  animation-duration: 1.5s;\n  animation-name: spin__src-Tatari__VCSbb;\n  animation-iteration-count: infinite;\n  animation-timing-function: linear;\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz      0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h      0PScxNic+PGVsbGlwc2UgY3g9IjgiIGN5PSI4IiByeD0iNyIgcnk9IjciIHN0      cm9rZS13aWR0aD0iMiIgc3Ryb2tlLW9wYWNpdHk9JzAuNScgc3Ryb2tlPSIjY      2NjIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9J00gMSA4IEEgOCA4IDAgMCAwID      QgMTMuNycgZmlsbD0nbm9uZScgc3Ryb2tlPScjRjQ3RTQyJyAgc3Ryb2tlLXd      pZHRoPScyJyBzdHJva2Utb3BhY2l0eT0nMC44JyAvPjwvc3ZnPg==\");\n  background-position: center center;\n  background-repeat: no-repeat;\n  background-size: 16px 16px;\n  height: 30px;\n  margin-left: auto;\n  width: 30px; }\n\n.dropdownPlainHead__src-Tatari__3tzkR {\n  border-bottom: 1px solid #ccc;\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  padding-left: 10px; }\n  .dropdownPlainHead__src-Tatari__3tzkR:hover {\n    background: #eee; }\n\n.dropdownPlainItem__src-Tatari__BftXM {\n  cursor: pointer;\n  display: block;\n  padding-left: 10px; }\n  .dropdownPlainItem__src-Tatari__BftXM:hover {\n    background: #eee; }\n\n.dropdownCheckboxesHead__src-Tatari__1hCP2 {\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n  .dropdownCheckboxesHead__src-Tatari__1hCP2:hover {\n    background: #eee; }\n\n.count__src-Tatari__2f7DK {\n  margin-right: auto; }\n\n.text__src-Tatari__2TjML {\n  margin-right: 5px;\n  text-align: left; }\n\n.dropdownCheckboxesHeadRemove__src-Tatari___2bpy {\n  background: 0;\n  border: 0;\n  cursor: pointer;\n  display: block;\n  height: 30px;\n  line-height: 30px;\n  margin-right: 5px;\n  outline: 0;\n  text-align: center;\n  width: 30px; }\n  .dropdownCheckboxesHeadRemove__src-Tatari___2bpy:hover {\n    background: #ddd; }\n\n.dropdownCheckboxesSearch__src-Tatari__QRP1q {\n  display: block;\n  height: 20px;\n  margin: 5px auto;\n  position: relative;\n  width: 90%; }\n  .dropdownCheckboxesSearch__src-Tatari__QRP1q .input__src-Tatari__3xuGI {\n    display: block;\n    height: 20px;\n    padding-right: 20px;\n    width: 100%; }\n  .dropdownCheckboxesSearch__src-Tatari__QRP1q .icon__src-Tatari__29Irr {\n    font-size: 10px;\n    height: 100%;\n    line-height: 20px;\n    position: absolute;\n    right: 0;\n    text-align: center;\n    top: 0;\n    width: 20px; }\n\n.dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE {\n  background: none;\n  border: 0;\n  color: #1e519f;\n  cursor: pointer;\n  display: inline-block;\n  font-size: 13px;\n  line-height: 20px;\n  margin: 0 3px;\n  padding: 0 !important;\n  vertical-align: top; }\n  .dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE:hover {\n    color: #f47e42 !important;\n    text-decoration: underline !important; }\n  .dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE:focus {\n    outline: 0; }\n\n.dropdownCheckboxesControls__src-Tatari__31bLE .divider__src-Tatari__3_59U {\n  margin: 0 5px; }\n\n.dropdownCheckboxesItem__src-Tatari__3QjOv {\n  cursor: pointer;\n  display: block; }\n  .dropdownCheckboxesItem__src-Tatari__3QjOv:hover {\n    background: #eee; }\n\n.dropdownCheckboxesCheckbox__src-Tatari__2Eayw {\n  cursor: pointer;\n  margin: 0 5px; }\n\n@keyframes spin__src-Tatari__VCSbb {\n  from {\n    transform: rotate(0deg); }\n  to {\n    transform: rotate(360deg); } }\n\n.clearAllFilters__src-Tatari__28RDW {\n  color: #1e519f;\n  cursor: pointer;\n  line-height: 30px;\n  margin-left: 20px;\n  outline: 0;\n  padding: 0; }\n  .clearAllFilters__src-Tatari__28RDW:hover {\n    color: #f47e42;\n    text-decoration: underline; }\n", ""]);
+exports.push([module.i, "* {\n  box-sizing: border-box;\n  margin: 0;\n  padding: 0; }\n\n.filterContainer__src-Tatari__P4aTc {\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n\n.dropdownContainer__src-Tatari__sHXHi {\n  border: 1px solid #ccc;\n  box-sizing: border-box;\n  max-height: 30px;\n  margin-right: 10px;\n  line-height: 30px;\n  overflow: hidden;\n  transition: all 0.3s ease;\n  width: 200px; }\n  .dropdownContainer__src-Tatari__sHXHi.expanded__src-Tatari__1MgWF {\n    height: auto;\n    max-height: 300px; }\n\n.caret__src-Tatari__1ybQ_ {\n  cursor: pointer;\n  font-size: 16px;\n  margin-left: auto;\n  text-align: center;\n  transition: all 0.3s ease;\n  width: 30px; }\n  .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1- {\n    display: block;\n    height: 30px;\n    line-height: 30px;\n    transition: transform 0.3s ease; }\n    .caret__src-Tatari__1ybQ_ .arrow__src-Tatari__1zp1-.expanded__src-Tatari__1MgWF {\n      transform: rotate(180deg); }\n  .caret__src-Tatari__1ybQ_:focus {\n    outline: 0; }\n  .caret__src-Tatari__1ybQ_:hover {\n    background: #ddd; }\n\n.loading__src-Tatari__3Plky {\n  animation-duration: 1.5s;\n  animation-name: spin__src-Tatari__VCSbb;\n  animation-iteration-count: infinite;\n  animation-timing-function: linear;\n  background-image: url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz      0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNicgaGVpZ2h      0PScxNic+PGVsbGlwc2UgY3g9IjgiIGN5PSI4IiByeD0iNyIgcnk9IjciIHN0      cm9rZS13aWR0aD0iMiIgc3Ryb2tlLW9wYWNpdHk9JzAuNScgc3Ryb2tlPSIjY      2NjIiBmaWxsPSJub25lIiAvPjxwYXRoIGQ9J00gMSA4IEEgOCA4IDAgMCAwID      QgMTMuNycgZmlsbD0nbm9uZScgc3Ryb2tlPScjRjQ3RTQyJyAgc3Ryb2tlLXd      pZHRoPScyJyBzdHJva2Utb3BhY2l0eT0nMC44JyAvPjwvc3ZnPg==\");\n  background-position: center center;\n  background-repeat: no-repeat;\n  background-size: 16px 16px;\n  height: 30px;\n  margin-left: auto;\n  width: 30px; }\n\n.dropdownPlainHead__src-Tatari__3tzkR {\n  border-bottom: 1px solid #ccc;\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  padding-left: 10px; }\n  .dropdownPlainHead__src-Tatari__3tzkR:hover {\n    background: #eee; }\n\n.dropdownPlainItem__src-Tatari__BftXM {\n  cursor: pointer;\n  display: block;\n  padding-left: 10px; }\n  .dropdownPlainItem__src-Tatari__BftXM:hover {\n    background: #eee; }\n\n.dropdownCheckboxesHead__src-Tatari__1hCP2 {\n  cursor: pointer;\n  display: -ms-flexbox;\n  display: flex;\n  -ms-flex-direction: row;\n      flex-direction: row; }\n  .dropdownCheckboxesHead__src-Tatari__1hCP2:hover {\n    background: #eee; }\n\n.count__src-Tatari__2f7DK {\n  margin-right: auto; }\n\n.text__src-Tatari__2TjML {\n  margin-right: 5px;\n  text-align: left; }\n\n.dropdownCheckboxesHeadRemove__src-Tatari___2bpy {\n  background: 0;\n  border: 0;\n  cursor: pointer;\n  display: block;\n  height: 30px;\n  line-height: 30px;\n  margin-right: 5px;\n  outline: 0;\n  text-align: center;\n  width: 30px; }\n  .dropdownCheckboxesHeadRemove__src-Tatari___2bpy:hover {\n    background: #ddd; }\n\n.dropdownCheckboxesSearch__src-Tatari__QRP1q {\n  display: block;\n  height: 20px;\n  margin: 5px auto;\n  position: relative;\n  width: 90%; }\n  .dropdownCheckboxesSearch__src-Tatari__QRP1q .input__src-Tatari__3xuGI {\n    display: block;\n    height: 20px;\n    padding-right: 20px;\n    width: 100%; }\n  .dropdownCheckboxesSearch__src-Tatari__QRP1q .icon__src-Tatari__29Irr {\n    font-size: 10px;\n    height: 100%;\n    line-height: 20px;\n    position: absolute;\n    right: 0;\n    text-align: center;\n    top: 0;\n    width: 20px; }\n\n.dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE {\n  background: none;\n  border: 0;\n  color: #1e519f;\n  cursor: pointer;\n  display: inline-block;\n  font-size: 13px;\n  line-height: 20px;\n  margin: 0 3px;\n  padding: 0 !important;\n  vertical-align: top; }\n  .dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE:hover {\n    color: #f47e42 !important;\n    text-decoration: underline !important; }\n  .dropdownCheckboxesControls__src-Tatari__31bLE .control__src-Tatari__3LdkE:focus {\n    outline: 0; }\n\n.dropdownCheckboxesControls__src-Tatari__31bLE .divider__src-Tatari__3_59U {\n  margin: 0 5px; }\n\n.dropdownCheckboxesItem__src-Tatari__3QjOv {\n  cursor: pointer;\n  display: block; }\n  .dropdownCheckboxesItem__src-Tatari__3QjOv:hover {\n    background: #eee; }\n\n.dropdownCheckboxesCheckbox__src-Tatari__2Eayw {\n  cursor: pointer;\n  margin: 0 5px; }\n\n@keyframes spin__src-Tatari__VCSbb {\n  from {\n    transform: rotate(0deg); }\n  to {\n    transform: rotate(360deg); } }\n\n.clearAllFilters__src-Tatari__28RDW {\n  color: #1e519f;\n  cursor: pointer;\n  line-height: 30px;\n  margin-left: 20px;\n  outline: 0;\n  padding: 0; }\n  .clearAllFilters__src-Tatari__28RDW:hover {\n    color: #f47e42;\n    text-decoration: underline; }\n", ""]);
 
 // exports
 exports.locals = {

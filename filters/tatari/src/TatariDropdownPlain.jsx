@@ -12,19 +12,21 @@ const TatariDropdownPlain = ({
   const items = data.map(item => (<div
     key={`item-${item.key}`}
     data-key={item.key}
-    className={styles.dropdownPlainItem}
+    className={styles.inactiveItem}
     onClick={onChange}
   >
     {item.value}
   </div>));
 
+  const text = <div className={styles.dropdownTitle}>Add Filter And A Bunch Of Other Wrapping Stuff</div>;
+
   const loading = (isLoading
-    ? <span className={styles.loading} />
+    ? <span className={styles.dropdownLoading} />
     : null);
 
   const caret = (isLoading || items.length === 0)
     ? null
-    : (<div className={styles.caret}>
+    : (<div className={styles.dropdownCaret}>
       <span
         className={cx('fa', 'fa-caret-down', styles.arrow,
         { [styles.expanded]: isExpanded })}
@@ -32,16 +34,19 @@ const TatariDropdownPlain = ({
     </div>);
 
   return (<div
-    className={cx(styles.dropdownContainer, { [styles.expanded]: isExpanded })}
+    className={styles.dropdownContainer}
     data-key={'inactive'}
     onClick={onExpand}
   >
-    <div className={styles.dropdownPlainHead}>
-      Add Filter
+    <div className={styles.dropdownHead}>
+      {text}
       {caret}
       {loading}
     </div>
-    {items}
+
+    <div className={cx(styles.dropdownBody, { [styles.expanded]: isExpanded })}>
+      {items}
+    </div>
   </div>);
 };
 

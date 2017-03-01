@@ -14,37 +14,35 @@ const TatariDropdownCheckboxes = ({
   options,
   styles
 }) => {
-  // TODO text wrapping on checkbox items
-  // TODO padding and improved styling
   const count = options.reduce((acc, option) => (option.checked ? acc + 1 : acc), 0);
   const adjustedCount = (count ? `(${count})` : null);
 
   const remove = (<button
-    className={cx('fa', 'fa-times', styles.dropdownCheckboxesHeadRemove)}
+    className={cx('fa', 'fa-times', styles.activeRemove)}
     data-key={filter.key}
     onClick={onRemove}
   />);
 
   const loading = (isLoading
-    ? <span className={styles.loading} />
+    ? <span className={styles.activeLoading} />
     : null);
 
-  const caret = (isLoading
+  const caret = isLoading
     ? null
-    : (<div className={styles.caret}>
+    : (<div className={styles.dropdownCaret}>
       <span
         className={cx('fa', 'fa-caret-down', styles.arrow,
         { [styles.expanded]: isExpanded })}
       />
-    </div>));
+    </div>);
 
-  const text = <div className={styles.text}>{filter.value}</div>;
+  const text = <div className={styles.dropdownTitle}>{filter.value}</div>;
 
   const items = options.reduce((acc, option) => {
     if (option.hidden !== true) {
       acc.push(<label
         key={`option-${option.key}`}
-        className={styles.dropdownCheckboxesItem}
+        className={styles.activeItem}
       >
         <input
           type='checkbox'
@@ -52,22 +50,18 @@ const TatariDropdownCheckboxes = ({
           onClick={onCheckOne}
           data-key={option.key}
           data-filter-key={filter.key}
-          className={styles.dropdownCheckboxesCheckbox}
+          className={styles.activeCheckbox}
         />
-        {option.value}
+        <div className={styles.activeText}>{option.value}</div>
       </label>);
     }
 
     return acc;
   }, []);
 
-  return (<div
-    className={cx(styles.dropdownContainer, { [styles.expanded]: isExpanded })}
-  >
+  return (<div className={styles.dropdownContainer} data-key={filter.key} onClick={onExpand}>
     <div // eslint-disable-line
-      className={styles.dropdownCheckboxesHead}
-      data-key={filter.key}
-      onClick={onExpand}
+      className={styles.dropdownHead}
     >
       {remove}
       {text}
@@ -76,22 +70,24 @@ const TatariDropdownCheckboxes = ({
       {loading}
     </div>
 
-    <div className={styles.dropdownCheckboxesSearch}>
-      <input onChange={onSearch} data-key={filter.key} className={styles.input} />
-      <div className={cx('fa', 'fa-search', styles.icon)} />
-    </div>
+    <div className={cx(styles.dropdownBody, { [styles.expanded]: isExpanded })}>
+      <div className={styles.activeSearch}>
+        <input onChange={onSearch} data-key={filter.key} className={styles.activeInput} />
+        <div className={cx('fa', 'fa-search', styles.activeIcon)} />
+      </div>
 
-    <div className={styles.dropdownCheckboxesControls}>
-      <button onClick={onCheckAll} data-key={filter.key} className={styles.control}>
-        Select All
-      </button>
-      <span className={styles.control}>/</span>
-      <button onClick={onCheckNone} data-key={filter.key} className={styles.control}>
-        Clear All
-      </button>
-    </div>
+      <div className={styles.activeControls}>
+        <button onClick={onCheckAll} data-key={filter.key} className={styles.activeControl}>
+          Select All
+        </button>
+        <span className={styles.activeDivider}>/</span>
+        <button onClick={onCheckNone} data-key={filter.key} className={styles.activeControl}>
+          Clear All
+        </button>
+      </div>
 
-    {items}
+      {items}
+    </div>
   </div>);
 };
 
