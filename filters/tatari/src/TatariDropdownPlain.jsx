@@ -9,16 +9,21 @@ const TatariDropdownPlain = ({
   onExpand,
   styles
 }) => {
-  const items = data.map(item => (<div
-    key={`item-${item.key}`}
-    data-key={item.key}
-    className={styles.inactiveItem}
-    onClick={onChange}
-  >
-    {item.value}
-  </div>));
+  const items = data.reduce((acc, item) => {
+    if (item.hidden !== true) {
+      acc.push(<div
+        key={`item-${item.key}`}
+        data-key={item.key}
+        className={styles.inactiveItem}
+        onClick={onChange}
+      >
+        {item.value}
+      </div>);
+    }
+    return acc;
+  }, []);
 
-  const text = <div className={styles.dropdownTitle}>Add Filter And A Bunch Of Other Wrapping Stuff</div>;
+  const text = <div className={styles.dropdownTitle}>Add Filter</div>;
 
   const loading = (isLoading
     ? <span className={styles.dropdownLoading} />

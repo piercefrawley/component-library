@@ -34,7 +34,6 @@ export default class Tatari extends React.Component {
       expanded: {},
       inactiveFilters: [],
       loading: { inactive: true },
-      // TODO preserve inactive stable ordering
       options: {}
     };
   }
@@ -228,7 +227,7 @@ export default class Tatari extends React.Component {
     const index = inactiveFilters.findIndex(filter => filter.key === key);
     const item = inactiveFilters[index];
 
-    inactiveFilters.splice(index, 1);
+    inactiveFilters[index].hidden = true;
     activeFilters.push(item);
 
     if (options[key] === undefined) {
@@ -250,20 +249,22 @@ export default class Tatari extends React.Component {
     const { activeFilters, inactiveFilters } = this.state;
 
     const key = evt.target.dataset.key;
-    const index = activeFilters.findIndex(filter => filter.key === key);
-    const item = activeFilters[index];
+    const activeIndex = activeFilters.findIndex(filter => filter.key === key);
+    const inactiveIndex = inactiveFilters.findIndex(filter => filter.key === key);
 
-    activeFilters.splice(index, 1);
-    inactiveFilters.push(item);
+    activeFilters.splice(activeIndex, 1);
+    inactiveFilters[inactiveIndex].hidden = false;
     this.setState({ inactiveFilters, activeFilters });
   }
 
   removeAllActive = () => {
     // TODO URL update
     const { activeFilters, inactiveFilters } = this.state;
-    const inactive = inactiveFilters.concat(activeFilters);
+    inactiveFilters.forEach(filter => {
+      filter.hidden = false;
+    });
 
-    this.setState({ inactiveFilters: inactive, activeFilters: [] });
+    this.setState({ inactiveFilters, activeFilters: [] });
   }
 
   removeEmptyActive = () => {
@@ -273,7 +274,9 @@ export default class Tatari extends React.Component {
   }
 
   render() {
-    const inactiveFilters = this.state.inactiveFilters.length
+    const showInactive = (this.state.inactiveFilters.length !== this.state.activeFilters.length);
+
+    const inactiveFilters = showInactive
       ? (<TatariDropdownPlain
         data={this.state.inactiveFilters}
         isExpanded={this.state.expanded.inactive}
