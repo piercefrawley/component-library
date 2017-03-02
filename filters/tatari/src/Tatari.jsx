@@ -247,7 +247,11 @@ export default class Tatari extends React.Component {
       options[key] = data.map(d => Object.assign(d, { checked: false }));
       const newLoading = this.state.loading;
       newLoading[key] = false;
-      this.setState({ options, loading: newLoading });
+
+      const newExpanded = this.state.expanded;
+      newExpanded[key] = true;
+
+      this.setState({ options, loading: newLoading, expanded: newExpanded });
     });
 
     this.setState({ inactiveFilters, activeFilters, loading, expanded: {} });
