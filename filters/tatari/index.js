@@ -2585,7 +2585,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
       var filterKey = evt.currentTarget.dataset.filterKey;
 
       options[filterKey] = options[filterKey].reduce(function (acc, option) {
-        option.key.toString() === key ? acc.push((0, _assign2.default)(option, !option.checked)) : acc.push(option);
+        option.key.toString() === key ? acc.push((0, _assign2.default)(option, { checked: !option.checked })) : acc.push(option);
 
         return acc;
       }, []);

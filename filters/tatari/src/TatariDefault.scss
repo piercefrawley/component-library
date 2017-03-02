@@ -1,129 +1,54 @@
-// @import "./variables";
-//
-// $dropdownH: 29px;
-// $dropdownHeadW: 150px;
-// $dropdownBodyW: 250px;
-// $inputP: 5px 10px;
-//
-// .dropdown {
-//   display: inline-block;
-//   margin-right: 10px;
-//   min-width: $dropdownHeadW;
-//   vertical-align: top;
-//
-//   :global .rw-popup {
-//     width: $dropdownBodyW;
-//   }
-//
-//   :global .rw-filter-input {
-//     display: block;
-//     line-height: 16px;
-//     margin: $inputP;
-//     width: auto;
-//   }
-//
-//   :global ul.rw-list > li.rw-list-option {
-//     border: 0;
-//     line-height: 16px;
-//     padding: 0;
-//   }
-//
-//   :global ul.rw-list > li.rw-list-option.rw-state-focus {
-//     &:hover {
-//       background: #e7e7e7;
-//     }
-//   }
-//
-//   :global ul.rw-list > li.rw-list-option.rw-state-selected {
-//     background: none;
-//     color: inherit;
-//   }
-// }
-//
-// .filter-head {
-//   padding-left: 22px;
-//
-//   .filter-head-remove {
-//     color: palette(gray, dark);
-//     display: inline-block;
-//     height: $dropdownH;
-//     left: 0;
-//     line-height: $dropdownH;
-//     position: absolute;
-//     text-align: center;
-//     transition: background-color .1s ease, color .1s ease;
-//     top: 0;
-//     width: $dropdownH;
-//
-//     &:hover {
-//       background: palette(orange);
-//       color: #fff;
-//     }
-//   }
-// }
-//
-// .checkbox-item,
-// .plain-item {
-//   cursor: pointer;
-//   display: block;
-//   position: relative;
-//   word-break: keep-all;
-//
-//   [type=checkbox] {
-//     left: 3px;
-//     margin-top: -6px;
-//     position: absolute;
-//     top: 50%;
-//   }
-// }
-//
-// .checkbox-item {
-//   padding: 5px 10px 5px 25px;
-// }
-//
-// .plain-item {
-//   padding: 5px 10px;
-// }
-//
-// .toggle-items-container {
-//   line-height: $dropdownH;
-//   padding-left: 10px;
-// }
-//
-// .toggle-items-divider {
-//   display: inline-block;
-//   line-height: $dropdownH;
-//   paddding: 0 4px;
-//   vertical-align: top;
-// }
-//
-// .clear-all-items,
-// .select-all-items {
-//   background: none !important;
-//   border: 0 !important;
-//   color: #1e519f !important;
-//   display: inline-block;
-//   line-height: $dropdownH;
-//   margin: 0 3px;
-//   padding: 0 !important;
-//   vertical-align: top;
-//
-//   &:hover {
-//     color: palette(orange) !important;
-//     text-decoration: underline !important;
-//   }
-// }
-//
-// .clear-all-filters {
-//   background: none !important;
-//   border: 0 !important;
-//   color: #1e519f !important;
-//   margin-left: 20px;
-//   outline: 0;
-//   padding: 0 !important;
-//
-//   &:hover {
-//     color: palette(orange) !important;
-//     text-decoration: underline !important;
-//   }
-// }
+@import "./variables";
+
+.clearAllFilters {
+  color: #1e519f;
+
+  &:hover {
+    color: palette(orange);
+  }
+}
+
+.dropdownHead {
+  border-radius: 2px;
+  border: 1px solid palette(gray, dark);
+  color: palette(black);
+
+  &:hover {
+    background: none;
+  }
+}
+
+.dropdownBody {
+  box-shadow: 0 1px 2px palette(gray, light);
+
+  &.expanded {
+    border: 1px solid palette(gray, dark);
+    border-top: 0;
+  }
+}
+
+.dropdownCaret {
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: palette(orange);
+    color: #fff;
+  }
+}
+
+.activeRemove {
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: palette(orange);
+    color: #fff;
+  }
+}
+
+.activeControl {
+  color: #1e519f;
+
+  &:hover {
+    color: palette(orange) !important;
+  }
+}
