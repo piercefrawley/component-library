@@ -48,8 +48,14 @@ export default class Tatari extends React.Component {
       get(this.props.urls.saved)
     ])
     .then(([{ data: availableFilters }, { data: saved }]) => {
+      // TODO Populate filters from URL first, then try remote retrieve.
+      // http://localhost:8080/?page=1&filters%5Bball_in_court_id%5D%5B%5D=1309646&filters%5Bball_in_court_id%5D%5B%5D=1228193&filters%5Bball_in_court_id%5D%5B%5D=1188710
+      const url = window.location.href.split('?');
+      const params = qs.parse(url[1]);
+      const previousFilters = params.filters || saved;
+
       const activeFilters = availableFilters.reduce((acc, filter, index) => {
-        if (saved[filter.key] !== undefined) {
+        if (previousFilters[filter.key] !== undefined) {
           acc.push(Object.assign(filter, { index }));
         }
 
@@ -57,7 +63,7 @@ export default class Tatari extends React.Component {
       }, []);
 
       const inactiveFilters = availableFilters.reduce((acc, filter, index) => {
-        if (saved[filter.key] === undefined) {
+        if (previousFilters[filter.key] === undefined) {
           acc.push(Object.assign(filter, { index }));
         }
 
@@ -65,7 +71,7 @@ export default class Tatari extends React.Component {
       }, []);
 
       const loading = availableFilters.reduce((acc, filter) =>
-        Object.assign(acc, { [filter.key]: saved[filter.key] !== undefined }),
+        Object.assign(acc, { [filter.key]: previousFilters[filter.key] !== undefined }),
         {});
 
       this.setState({ inactiveFilters, activeFilters, loading });
@@ -76,7 +82,7 @@ export default class Tatari extends React.Component {
             const { data } = values[index];
 
             const setChecked = d =>
-              Object.assign(d, { checked: (saved[filter.key].indexOf(d.key) > -1) });
+              Object.assign(d, { checked: (previousFilters[filter.key].indexOf(d.key) > -1) });
 
             return Object.assign(acc, { [filter.key]: data.map(setChecked) });
           }, {});
@@ -88,14 +94,6 @@ export default class Tatari extends React.Component {
         });
     })
     .catch(e => { console.error(e); }) // eslint-disable-line
-
-    // TODO Populate filters from URL first, then try remote retrieve.
-    // const url = window.location.href.split('?');
-    // const params = qs.parse(url[1]);
-    // if (params.filters) {
-    //   // TODO is this correct
-    //   return { data: params.filters };
-    // }
   }
 
   onExpand = (evt) => {

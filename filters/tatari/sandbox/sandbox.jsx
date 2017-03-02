@@ -42,16 +42,18 @@ mockApi
       { key: 1133787, value: 'Western Scrubjay' },
       { key: 1202938, value: 'Ultimate Test' },
       { key: 1133776, value: 'California Towhee' }
-  ]);
+  ])
+.onPatch('/patch_filters')
+  .reply(200);
 
 const urls = {
   available: '/available_filters',
-  patch: null,
+  patch: '/patch_filters',
   saved: '/saved_filters'
 };
 
 const onComplete = () => {
-  console.warn("External onFetch called.");  // eslint-disable-line
+  console.warn("Called external population function.");  // eslint-disable-line
 };
 
 const stylesheets = [
