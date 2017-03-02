@@ -48,8 +48,6 @@ export default class Tatari extends React.Component {
       get(this.props.urls.saved)
     ])
     .then(([{ data: availableFilters }, { data: saved }]) => {
-      // TODO Populate filters from URL first, then try remote retrieve.
-      // http://localhost:8080/?page=1&filters%5Bball_in_court_id%5D%5B%5D=1309646&filters%5Bball_in_court_id%5D%5B%5D=1228193&filters%5Bball_in_court_id%5D%5B%5D=1188710
       const url = window.location.href.split('?');
       const params = qs.parse(url[1]);
       const previousFilters = params.filters || saved;
@@ -82,7 +80,7 @@ export default class Tatari extends React.Component {
             const { data } = values[index];
 
             const setChecked = d =>
-              Object.assign(d, { checked: (previousFilters[filter.key].indexOf(d.key) > -1) });
+              Object.assign(d, { checked: (previousFilters[filter.key].indexOf(d.key.toString()) > -1) });
 
             return Object.assign(acc, { [filter.key]: data.map(setChecked) });
           }, {});
@@ -150,7 +148,7 @@ export default class Tatari extends React.Component {
   };
 
   createPayload = () => {
-    const { options } = this.state;
+    const { activeFilters, options } = this.state;
 
     const reduceSingle = (acc, value) => {
       if (value.key && value.checked === true) {
@@ -160,10 +158,10 @@ export default class Tatari extends React.Component {
       return acc;
     };
 
-    const reduceAll = (acc, key) =>
-      Object.assign(acc, { [key]: options[key].reduce(reduceSingle, []) });
+    const reduceAll = (acc, filter) =>
+      Object.assign(acc, { [filter.key]: options[filter.key].reduce(reduceSingle, []) });
 
-    return Object.keys(options).reduce(reduceAll, {});
+    return activeFilters.reduce(reduceAll, {});
   }
 
   saveOptions = () => {
@@ -189,7 +187,10 @@ export default class Tatari extends React.Component {
       }
     });
 
-    this.setState({ options, expanded: Object.assign(this.state.expanded, { [filterKey]: true }) }, this.updateUrl);
+    this.setState({
+      options,
+      expanded: Object.assign(this.state.expanded, { [filterKey]: true })
+    }, this.updateUrl);
   }
 
   checkAll = (evt) => {
@@ -237,11 +238,6 @@ export default class Tatari extends React.Component {
       return Promise.resolve({ data: options[key] });
     };
 
-    const animationFinished = () => {
-      const hiding = Object.assign(this.state.hiding, { [key]: false });
-      this.setState({ hiding });
-    };
-
     retrieveOptions().then(({ data }) => {
       options[key] = data.map(d => Object.assign(d, { checked: false }));
       const newLoading = this.state.loading;
@@ -249,7 +245,7 @@ export default class Tatari extends React.Component {
       this.setState({ options, loading: newLoading });
     });
 
-    this.setState({ inactiveFilters, activeFilters, loading, expanded: {} }, setTimeout.bind(null, animationFinished, 300));
+    this.setState({ inactiveFilters, activeFilters, loading, expanded: {} });
   }
 
   removeActive = (evt) => {
@@ -265,16 +261,15 @@ export default class Tatari extends React.Component {
     inactiveFilters.push(item);
     inactiveFilters.sort((a, b) => (a.index - b.index));
 
-    this.setState({ inactiveFilters, activeFilters });
+    this.setState({ inactiveFilters, activeFilters }, this.updateUrl);
   }
 
   removeAllActive = () => {
-    // TODO URL update
     const { activeFilters, inactiveFilters } = this.state;
     const inactive = inactiveFilters.concat(activeFilters)
       .sort((a, b) => (a.index - b.index));
 
-    this.setState({ inactiveFilters: inactive, activeFilters: [] });
+    this.setState({ inactiveFilters: inactive, activeFilters: [] }, this.updateUrl);
   }
 
   removeEmptyActive = () => {
@@ -285,8 +280,6 @@ export default class Tatari extends React.Component {
         .reduce((acc, option) => acc || option.checked, false);
 
       if (isPopulated === false) {
-        this.state.options[filter.key]
-          .forEach((option) => { option.checked = false; });
         inactiveFilters.push(filter);
       } else {
         activeAcc.push(filter);

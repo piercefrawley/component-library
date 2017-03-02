@@ -1,6 +1,6 @@
 import { render } from 'react-dom';
 import axios from 'axios';
-import MockAdapter from 'axios-mock-adapter';
+import MockAdapter from 'axios-mock-adapter'; // eslint-disable-line
 import React from 'react';
 import Tatari from '../src';
 import defaultStyles from '../src/TatariDefault.scss';
