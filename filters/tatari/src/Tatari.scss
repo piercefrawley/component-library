@@ -38,11 +38,11 @@ $searchH: 20px;
   transition: all 0.2s ease;
   width: 200px;
 
-  &.hiding {
-    margin-right: 0;
-    opacity: 0;
-    width: 0;
-  }
+  // &.hiding {
+  //   margin-right: 0;
+  //   opacity: 0;
+  //   width: 0;
+  // }
 }
 
 .dropdownHead {
@@ -61,10 +61,13 @@ $searchH: 20px;
 }
 
 .dropdownBody {
+  background: #fff;
   max-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  position: absolute;
   transition: all $delay ease;
+  width: 200px;
 
   &.expanded {
     border: 1px solid #ccc;
