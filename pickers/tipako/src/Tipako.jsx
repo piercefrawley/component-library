@@ -111,7 +111,7 @@ export default class Tipako extends React.Component {
     tokensMemo[child.id] = tokens.length;
     tokens.push(child);
 
-    this.setState({ tokens, expanded: false, value: '' });
+    this.setState({ tokens, data: this.props.data, expanded: false, value: '' });
   }
 
   onGroupClick = (group) => {

@@ -1126,7 +1126,7 @@ var Tipako = (_temp = _class = function (_React$Component) {
       tokensMemo[child.id] = tokens.length;
       tokens.push(child);
 
-      _this.setState({ tokens: tokens, expanded: false, value: '' });
+      _this.setState({ tokens: tokens, data: _this.props.data, expanded: false, value: '' });
     };
 
     _this.onGroupClick = function (group) {
@@ -1219,7 +1219,7 @@ var Tipako = (_temp = _class = function (_React$Component) {
     };
 
     _this.onClearAll = function () {
-      _this.props.onSelect((0, _values2.default)(_this.state.tokens));
+      _this.props.onSelect([]);
       _this.setState({ tokens: [], expanded: false });
     };
 

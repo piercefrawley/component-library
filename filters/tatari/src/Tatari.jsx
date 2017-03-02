@@ -79,8 +79,8 @@ export default class Tatari extends React.Component {
           const options = activeFilters.reduce((acc, filter, index) => {
             const { data } = values[index];
 
-            const setChecked = d =>
-              Object.assign(d, { checked: (previousFilters[filter.key].indexOf(d.key.toString()) > -1) });
+            const setChecked = d => Object.assign(d,
+              { checked: (previousFilters[filter.key].indexOf(d.key.toString()) > -1) });
 
             return Object.assign(acc, { [filter.key]: data.map(setChecked) });
           }, {});
@@ -104,7 +104,7 @@ export default class Tatari extends React.Component {
     const expandedStatus = !this.state.expanded[key];
 
     if (expandedStatus === false && key !== 'inactive') {
-      this.saveOptions();
+      this.onBlur();
     }
 
     const expanded = { [key]: expandedStatus };
@@ -113,11 +113,16 @@ export default class Tatari extends React.Component {
   }
 
   onBlur = () => {
-    // if (this.state.activeFilters.length) {
-    //   this.removeEmptyActive();
-    // }
+    const activeExpandedCount = this.state.activeFilters.reduce((acc, filter) =>
+      (this.state.expanded[filter.key] === true ? acc + 1 : acc), 0);
 
-    // this.setState({ expanded: {} });
+    if (activeExpandedCount) {
+      this.updateUrl();
+      this.removeEmptyActive();
+      this.saveOptions();
+    }
+
+    this.setState({ expanded: {} });
   }
 
   onSearch = (evt) => {
@@ -167,30 +172,30 @@ export default class Tatari extends React.Component {
   saveOptions = () => {
     const payload = { filters: this.createPayload() };
 
-    if (Object.keys(payload.filters).length === 0) {
-      return;
-    }
-
-    patch(this.props.urls.patch, payload).then(this.props.onComplete);
+    Object.keys(payload.filters).length === 0
+      ? patch(this.props.urls.patch, payload).then(this.props.onComplete)
+      : this.props.onComplete();
   }
 
   checkOne = (evt) => {
     evt.stopPropagation();
 
     const { options } = this.state;
-    const key = evt.target.dataset.key;
-    const filterKey = evt.target.dataset.filterKey;
+    const key = evt.currentTarget.dataset.key;
+    const filterKey = evt.currentTarget.dataset.filterKey;
 
-    options[filterKey].forEach((option) => {
-      if (option.key.toString() === key) {
-        option.checked = !option.checked;
-      }
-    });
+    options[filterKey] = options[filterKey].reduce((acc, option) => {
+      option.key.toString() === key
+        ? acc.push(Object.assign(option, { checked: !option.checked }))
+        : acc.push(option);
+
+      return acc;
+    }, []);
 
     this.setState({
       options,
       expanded: Object.assign(this.state.expanded, { [filterKey]: true })
-    }, this.updateUrl);
+    });
   }
 
   checkAll = (evt) => {
@@ -202,7 +207,7 @@ export default class Tatari extends React.Component {
     options[key].reduce((acc, option) =>
       acc.concat(Object.assign(option, { checked: true })), []);
 
-    this.setState({ options }, this.updateUrl);
+    this.setState({ options });
   }
 
   checkNone = (evt) => {
@@ -214,7 +219,7 @@ export default class Tatari extends React.Component {
     options[key].reduce((acc, option) =>
       Object.assign(option, { checked: false }), []);
 
-    this.setState({ options }, this.updateUrl);
+    this.setState({ options });
   }
 
   addActive = (evt) => {
@@ -261,7 +266,7 @@ export default class Tatari extends React.Component {
     inactiveFilters.push(item);
     inactiveFilters.sort((a, b) => (a.index - b.index));
 
-    this.setState({ inactiveFilters, activeFilters }, this.updateUrl);
+    this.setState({ inactiveFilters, activeFilters });
   }
 
   removeAllActive = () => {

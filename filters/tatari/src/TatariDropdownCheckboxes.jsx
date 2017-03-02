@@ -41,16 +41,17 @@ const TatariDropdownCheckboxes = ({
   const items = options.reduce((acc, option) => {
     if (option.hidden !== true) {
       acc.push(<label
-        key={`option-${option.key}`}
         className={styles.activeItem}
+        key={`option-${option.key}`}
+        onClick={(evt) => { evt.stopPropagation(); }}
       >
         <input
           type='checkbox'
           checked={option.checked || false}
-          onChange={onCheckOne}
-          data-key={option.key}
-          data-filter-key={filter.key}
           className={styles.activeCheckbox}
+          onChange={onCheckOne}
+          data-filter-key={filter.key}
+          data-key={option.key}
         />
         <div className={styles.activeText}>{option.value}</div>
       </label>);

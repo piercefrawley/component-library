@@ -2499,7 +2499,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
       var expandedStatus = !_this.state.expanded[key];
 
       if (expandedStatus === false && key !== 'inactive') {
-        _this.saveOptions();
+        _this.onBlur();
       }
 
       var expanded = (0, _defineProperty3.default)({}, key, expandedStatus);
@@ -2508,11 +2508,17 @@ var Tatari = (_temp = _class = function (_React$Component) {
     };
 
     _this.onBlur = function () {
-      // if (this.state.activeFilters.length) {
-      //   this.removeEmptyActive();
-      // }
+      var activeExpandedCount = _this.state.activeFilters.reduce(function (acc, filter) {
+        return _this.state.expanded[filter.key] === true ? acc + 1 : acc;
+      }, 0);
 
-      // this.setState({ expanded: {} });
+      if (activeExpandedCount) {
+        _this.updateUrl();
+        _this.removeEmptyActive();
+        _this.saveOptions();
+      }
+
+      _this.setState({ expanded: {} });
     };
 
     _this.onSearch = function (evt) {
@@ -2544,7 +2550,9 @@ var Tatari = (_temp = _class = function (_React$Component) {
     };
 
     _this.createPayload = function () {
-      var options = _this.state.options;
+      var _this$state = _this.state,
+          activeFilters = _this$state.activeFilters,
+          options = _this$state.options;
 
 
       var reduceSingle = function reduceSingle(acc, value) {
@@ -2555,21 +2563,17 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return acc;
       };
 
-      var reduceAll = function reduceAll(acc, key) {
-        return (0, _assign2.default)(acc, (0, _defineProperty3.default)({}, key, options[key].reduce(reduceSingle, [])));
+      var reduceAll = function reduceAll(acc, filter) {
+        return (0, _assign2.default)(acc, (0, _defineProperty3.default)({}, filter.key, options[filter.key].reduce(reduceSingle, [])));
       };
 
-      return (0, _keys2.default)(options).reduce(reduceAll, {});
+      return activeFilters.reduce(reduceAll, {});
     };
 
     _this.saveOptions = function () {
       var payload = { filters: _this.createPayload() };
 
-      if ((0, _keys2.default)(payload.filters).length === 0) {
-        return;
-      }
-
-      (0, _TatariApi.patch)(_this.props.urls.patch, payload).then(_this.props.onComplete);
+      (0, _keys2.default)(payload.filters).length === 0 ? (0, _TatariApi.patch)(_this.props.urls.patch, payload).then(_this.props.onComplete) : _this.props.onComplete();
     };
 
     _this.checkOne = function (evt) {
@@ -2577,16 +2581,19 @@ var Tatari = (_temp = _class = function (_React$Component) {
 
       var options = _this.state.options;
 
-      var key = evt.target.dataset.key;
-      var filterKey = evt.target.dataset.filterKey;
+      var key = evt.currentTarget.dataset.key;
+      var filterKey = evt.currentTarget.dataset.filterKey;
 
-      options[filterKey].forEach(function (option) {
-        if (option.key.toString() === key) {
-          option.checked = !option.checked;
-        }
+      options[filterKey] = options[filterKey].reduce(function (acc, option) {
+        option.key.toString() === key ? acc.push((0, _assign2.default)(option, !option.checked)) : acc.push(option);
+
+        return acc;
+      }, []);
+
+      _this.setState({
+        options: options,
+        expanded: (0, _assign2.default)(_this.state.expanded, (0, _defineProperty3.default)({}, filterKey, true))
       });
-
-      _this.setState({ options: options, expanded: (0, _assign2.default)(_this.state.expanded, (0, _defineProperty3.default)({}, filterKey, true)) }, _this.updateUrl);
     };
 
     _this.checkAll = function (evt) {
@@ -2600,7 +2607,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return acc.concat((0, _assign2.default)(option, { checked: true }));
       }, []);
 
-      _this.setState({ options: options }, _this.updateUrl);
+      _this.setState({ options: options });
     };
 
     _this.checkNone = function (evt) {
@@ -2613,17 +2620,17 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return (0, _assign2.default)(option, { checked: false });
       }, []);
 
-      _this.setState({ options: options }, _this.updateUrl);
+      _this.setState({ options: options });
     };
 
     _this.addActive = function (evt) {
       evt.stopPropagation();
 
-      var _this$state = _this.state,
-          activeFilters = _this$state.activeFilters,
-          inactiveFilters = _this$state.inactiveFilters,
-          loading = _this$state.loading,
-          options = _this$state.options;
+      var _this$state2 = _this.state,
+          activeFilters = _this$state2.activeFilters,
+          inactiveFilters = _this$state2.inactiveFilters,
+          loading = _this$state2.loading,
+          options = _this$state2.options;
 
 
       var key = evt.target.dataset.key;
@@ -2644,11 +2651,6 @@ var Tatari = (_temp = _class = function (_React$Component) {
         return _promise2.default.resolve({ data: options[key] });
       };
 
-      var animationFinished = function animationFinished() {
-        var hiding = (0, _assign2.default)(_this.state.hiding, (0, _defineProperty3.default)({}, key, false));
-        _this.setState({ hiding: hiding });
-      };
-
       retrieveOptions().then(function (_ref) {
         var data = _ref.data;
 
@@ -2660,15 +2662,15 @@ var Tatari = (_temp = _class = function (_React$Component) {
         _this.setState({ options: options, loading: newLoading });
       });
 
-      _this.setState({ inactiveFilters: inactiveFilters, activeFilters: activeFilters, loading: loading, expanded: {} }, setTimeout.bind(null, animationFinished, 300));
+      _this.setState({ inactiveFilters: inactiveFilters, activeFilters: activeFilters, loading: loading, expanded: {} });
     };
 
     _this.removeActive = function (evt) {
       evt.stopPropagation();
 
-      var _this$state2 = _this.state,
-          activeFilters = _this$state2.activeFilters,
-          inactiveFilters = _this$state2.inactiveFilters;
+      var _this$state3 = _this.state,
+          activeFilters = _this$state3.activeFilters,
+          inactiveFilters = _this$state3.inactiveFilters;
 
       var key = evt.target.dataset.key;
 
@@ -2687,22 +2689,21 @@ var Tatari = (_temp = _class = function (_React$Component) {
     };
 
     _this.removeAllActive = function () {
-      // TODO URL update
-      var _this$state3 = _this.state,
-          activeFilters = _this$state3.activeFilters,
-          inactiveFilters = _this$state3.inactiveFilters;
+      var _this$state4 = _this.state,
+          activeFilters = _this$state4.activeFilters,
+          inactiveFilters = _this$state4.inactiveFilters;
 
       var inactive = inactiveFilters.concat(activeFilters).sort(function (a, b) {
         return a.index - b.index;
       });
 
-      _this.setState({ inactiveFilters: inactive, activeFilters: [] });
+      _this.setState({ inactiveFilters: inactive, activeFilters: [] }, _this.updateUrl);
     };
 
     _this.removeEmptyActive = function () {
-      var _this$state4 = _this.state,
-          activeFilters = _this$state4.activeFilters,
-          inactiveFilters = _this$state4.inactiveFilters;
+      var _this$state5 = _this.state,
+          activeFilters = _this$state5.activeFilters,
+          inactiveFilters = _this$state5.inactiveFilters;
 
 
       var activeUpdated = activeFilters.reduce(function (activeAcc, filter) {
@@ -2711,9 +2712,6 @@ var Tatari = (_temp = _class = function (_React$Component) {
         }, false);
 
         if (isPopulated === false) {
-          _this.state.options[filter.key].forEach(function (option) {
-            option.checked = false;
-          });
           inactiveFilters.push(filter);
         } else {
           activeAcc.push(filter);
@@ -2757,8 +2755,12 @@ var Tatari = (_temp = _class = function (_React$Component) {
             availableFilters = _ref3[0].data,
             saved = _ref3[1].data;
 
+        var url = window.location.href.split('?');
+        var params = _qs2.default.parse(url[1]);
+        var previousFilters = params.filters || saved;
+
         var activeFilters = availableFilters.reduce(function (acc, filter, index) {
-          if (saved[filter.key] !== undefined) {
+          if (previousFilters[filter.key] !== undefined) {
             acc.push((0, _assign2.default)(filter, { index: index }));
           }
 
@@ -2766,7 +2768,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
         }, []);
 
         var inactiveFilters = availableFilters.reduce(function (acc, filter, index) {
-          if (saved[filter.key] === undefined) {
+          if (previousFilters[filter.key] === undefined) {
             acc.push((0, _assign2.default)(filter, { index: index }));
           }
 
@@ -2774,7 +2776,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
         }, []);
 
         var loading = availableFilters.reduce(function (acc, filter) {
-          return (0, _assign2.default)(acc, (0, _defineProperty3.default)({}, filter.key, saved[filter.key] !== undefined));
+          return (0, _assign2.default)(acc, (0, _defineProperty3.default)({}, filter.key, previousFilters[filter.key] !== undefined));
         }, {});
 
         _this2.setState({ inactiveFilters: inactiveFilters, activeFilters: activeFilters, loading: loading });
@@ -2787,7 +2789,7 @@ var Tatari = (_temp = _class = function (_React$Component) {
 
 
             var setChecked = function setChecked(d) {
-              return (0, _assign2.default)(d, { checked: saved[filter.key].indexOf(d.key) > -1 });
+              return (0, _assign2.default)(d, { checked: previousFilters[filter.key].indexOf(d.key.toString()) > -1 });
             };
 
             return (0, _assign2.default)(acc, (0, _defineProperty3.default)({}, filter.key, data.map(setChecked)));
@@ -2801,15 +2803,6 @@ var Tatari = (_temp = _class = function (_React$Component) {
       }).catch(function (e) {
         console.error(e);
       }); // eslint-disable-line
-
-      // TODO focus on checkbox not working
-      // TODO Populate filters from URL first, then try remote retrieve.
-      // const url = window.location.href.split('?');
-      // const params = qs.parse(url[1]);
-      // if (params.filters) {
-      //   // TODO is this correct
-      //   return { data: params.filters };
-      // }
     }
   }, {
     key: 'render',
@@ -3819,16 +3812,19 @@ var TatariDropdownCheckboxes = function TatariDropdownCheckboxes(_ref) {
       acc.push(_react2.default.createElement(
         'label',
         {
+          className: styles.activeItem,
           key: 'option-' + option.key,
-          className: styles.activeItem
+          onClick: function onClick(evt) {
+            evt.stopPropagation();
+          }
         },
         _react2.default.createElement('input', {
           type: 'checkbox',
           checked: option.checked || false,
+          className: styles.activeCheckbox,
           onChange: onCheckOne,
-          'data-key': option.key,
           'data-filter-key': filter.key,
-          className: styles.activeCheckbox
+          'data-key': option.key
         }),
         _react2.default.createElement(
           'div',
